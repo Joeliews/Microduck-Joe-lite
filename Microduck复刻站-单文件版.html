@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Microduck 复刻记录 · Joe刘 的开源机器鸭精简版复刻（单文件版）</title>
+<meta name="description" content="Joe刘 的 Microduck 复刻记录单文件版：开源机器鸭精简版复刻的当前进度（到货验收阶段）、原版路线配件清单与花费、采购与到货状态、国产替代设想分支，以及强化学习策略、NPU 视觉推理、相机与视频链、手柄与声音四个方向的板端实测规划。装机舵机改用国产替代飞特 1910，原因是原版电机买不到；所有未验证的数据一律标注待补充或待核实，不做既成事实。本站为个人学习与研究用的非官方记录。">
+<style>
+/* ============================================================================
+ * Microduck 复刻记录站 · 样式表
+ * 纯 CSS，无外部依赖、无 CDN、无字体下载（用系统字体栈）。
+ * 浅色为主，跟随系统深色（prefers-color-scheme）。
+ * ========================================================================== */
+
+:root {
+  --bg: #f5f6f8;
+  --bg-soft: #eceef2;
+  --panel: #ffffff;
+  --panel-2: #fafbfc;
+  --ink: #101318;
+  --ink-2: #3d4450;
+  --muted: #6f7683;
+  --line: #e4e7ec;
+  --line-strong: #d3d8e0;
+  --brand: #1f4fd8;
+  --brand-soft: #eaf0ff;
+  --ok: #157347;
+  --ok-soft: #e6f4ec;
+  --wip: #1f4fd8;
+  --wip-soft: #eaf0ff;
+  --plan: #8a5a00;
+  --plan-soft: #fff5e2;
+  --bad: #a52020;
+  --bad-soft: #fdeaea;
+  --dom: #6d28d9;
+  --dom-soft: #f2ecfe;
+  --shadow: 0 1px 2px rgba(16, 19, 24, .04), 0 18px 40px -28px rgba(16, 19, 24, .28);
+  --radius: 20px;
+  --radius-sm: 12px;
+  --wrap: 1180px;
+  --gap: 20px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+          "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei",
+          Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1015;
+    --bg-soft: #131820;
+    --panel: #161b23;
+    --panel-2: #1a2029;
+    --ink: #e9ecf1;
+    --ink-2: #c2c8d2;
+    --muted: #98a0ad;
+    --line: #262d38;
+    --line-strong: #333c49;
+    --brand: #7aa2ff;
+    --brand-soft: #1b2740;
+    --ok: #6ddba0;
+    --ok-soft: #14291f;
+    --wip: #8fb3ff;
+    --wip-soft: #17223a;
+    --plan: #f0c477;
+    --plan-soft: #2a2113;
+    --bad: #ff9a9a;
+    --bad-soft: #2c1618;
+    --dom: #c3a6ff;
+    --dom-soft: #241a3c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 18px 40px -28px rgba(0, 0, 0, .8);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.wrap { width: 100%; max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+
+/* ---------------------------------------------------------------- 顶部导航 */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255, 255, 255, .86);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: saturate(180%) blur(12px);
+}
+@media (prefers-color-scheme: dark) { .nav { background: rgba(13, 16, 21, .82); } }
+
+.nav-inner {
+  max-width: var(--wrap); margin: 0 auto; padding: 12px 24px;
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--ink); letter-spacing: -.01em; }
+.brand:hover { text-decoration: none; }
+.brand-dot {
+  width: 26px; height: 26px; border-radius: 8px; flex: 0 0 auto;
+  background: linear-gradient(140deg, #ffcb45, #f59f00);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08);
+  display: grid; place-items: center; font-size: 13px;
+}
+.brand small { display: block; font-weight: 500; color: var(--muted); font-size: 11px; letter-spacing: .12em; }
+.nav-links { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+.nav-links a {
+  padding: 7px 13px; border-radius: 999px; color: var(--ink-2); font-size: 14px; font-weight: 500;
+}
+.nav-links a:hover { background: var(--bg-soft); text-decoration: none; color: var(--ink); }
+.nav-links a[aria-current="page"] { background: var(--ink); color: #fff; }
+
+/* -------------------------------------------------------------------- 通用 */
+.section { padding: 68px 0; }
+.section + .section { border-top: 1px solid var(--line); }
+.section.alt { background: var(--bg-soft); }
+
+.eyebrow {
+  font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; font-family: var(--mono);
+}
+.sec-head { margin-bottom: 28px; max-width: 760px; }
+.sec-title { font-size: clamp(26px, 3.4vw, 38px); line-height: 1.2; letter-spacing: -.02em; margin: 10px 0 10px; font-weight: 800; }
+.sec-sub { color: var(--muted); margin: 0; font-size: 15.5px; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.small { font-size: 13px; }
+
+/* -------------------------------------------------------------------- 按钮 */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 18px; border-radius: 999px; font-size: 14.5px; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer; line-height: 1.2;
+}
+.btn:hover { text-decoration: none; }
+.btn-primary { background: var(--ink); color: var(--bg); }
+.btn-primary:hover { filter: brightness(1.15); }
+.btn-ghost { background: var(--panel); color: var(--ink); border-color: var(--line-strong); }
+.btn-ghost:hover { background: var(--bg-soft); }
+.btn-arrow { font-size: 12px; opacity: .7; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* --------------------------------------------------------------- 状态徽章 */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  border: 1px solid transparent; white-space: nowrap; line-height: 1.5;
+}
+.b-ok    { background: var(--ok-soft);   color: var(--ok);   border-color: currentColor; }
+.b-wip   { background: var(--wip-soft);  color: var(--wip);  border-color: currentColor; }
+.b-plan  { background: var(--plan-soft); color: var(--plan); border-color: currentColor; }
+.b-bad   { background: var(--bad-soft);  color: var(--bad);  border-color: currentColor; }
+.b-neutral { background: var(--bg-soft); color: var(--ink-2); border-color: var(--line-strong); }
+.b-todo  {
+  background: transparent; color: var(--muted);
+  border: 1px dashed var(--line-strong);
+}
+.v-orig { background: var(--ok-soft);  color: var(--ok);  border-color: currentColor; }
+.v-dom  { background: var(--dom-soft); color: var(--dom); border-color: currentColor; }
+.v-tbd  { background: transparent; color: var(--muted); border: 1px dashed var(--line-strong); }
+
+.deviate {
+  border: 1px solid var(--line-strong); border-left: 4px solid var(--dom);
+  background: var(--panel); border-radius: var(--radius-sm); padding: 16px 20px;
+}
+.deviate h3 { margin: 0 0 8px; font-size: 16px; }
+.deviate .item { padding: 10px 0; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--ink-2); }
+.deviate .item:first-of-type { border-top: 0; }
+.deviate .item strong { color: var(--ink); }
+.part-note { margin: 6px 0 0; font-size: 13px; color: var(--dom); }
+.blockers { margin-top: 20px; }
+.blockers h3 { margin: 0 0 10px; font-size: 16px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel); font-size: 13px; color: var(--ink-2);
+}
+
+/* --------------------------------------------------------------------- 首页 */
+.hero { padding: 56px 0 8px; }
+.hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 44px; align-items: center; }
+.display {
+  font-size: clamp(44px, 8.4vw, 92px); line-height: .95; letter-spacing: -.045em;
+  margin: 14px 0 18px; font-weight: 800;
+}
+.display span { display: block; font-size: .34em; letter-spacing: -.01em; color: var(--ink-2); font-weight: 700; margin-top: 10px; }
+.lede { font-size: 17px; color: var(--ink-2); max-width: 60ch; }
+.status-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 20px 0 24px; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 999px;
+  border: 1px solid var(--line-strong); background: var(--panel); font-size: 13.5px; font-weight: 600;
+}
+.status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--plan); }
+@media (prefers-color-scheme: dark) { .status-pill .dot { background: var(--plan); } }
+
+.placeholder {
+  border: 1px dashed var(--line-strong); border-radius: var(--radius);
+  background:
+    repeating-linear-gradient(135deg, transparent 0 12px, var(--bg-soft) 12px 24px);
+  display: grid; place-items: center; text-align: center; padding: 28px;
+  color: var(--muted); min-height: 240px;
+}
+.placeholder strong { display: block; color: var(--ink-2); font-size: 15px; margin-bottom: 6px; }
+.placeholder code { font-family: var(--mono); font-size: 12.5px; }
+
+/* ------------------------------------------------------------------ 卡片栅格 */
+.grid { display: grid; gap: var(--gap); }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 22px 22px 24px; box-shadow: var(--shadow);
+}
+.card > h3 { margin: 0 0 8px; font-size: 17px; letter-spacing: -.01em; }
+.card p { margin: 0; color: var(--ink-2); font-size: 14.5px; }
+.card-num { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .12em; }
+
+.rail {
+  display: grid; gap: var(--gap); grid-auto-flow: column;
+  grid-auto-columns: 84%; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding-bottom: 10px; margin: 0 -24px; padding-left: 24px; padding-right: 24px;
+}
+.rail > * { scroll-snap-align: start; }
+.rail::-webkit-scrollbar { height: 8px; }
+.rail::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 99px; }
+.rail-hint { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+
+/* ----------------------------------------------------------------- 进度条 */
+.meter { margin: 6px 0 4px; }
+.bar { height: 10px; border-radius: 999px; background: var(--bg-soft); border: 1px solid var(--line); overflow: hidden; }
+.bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--brand), #6f9bff); border-radius: 999px; transition: width .4s ease; }
+.bar-fill.empty { background: repeating-linear-gradient(90deg, var(--line-strong) 0 8px, transparent 8px 16px); }
+.meter-legend { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+.stagebar svg { width: 100%; height: auto; display: block; }
+
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 16px 18px; }
+.stat .k { font-size: 12.5px; color: var(--muted); letter-spacing: .04em; }
+.stat .v { font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin-top: 4px; }
+
+/* ------------------------------------------------------------------ 时间线 */
+.timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+.timeline::before { content: ""; position: absolute; left: 13px; top: 6px; bottom: 6px; width: 2px; background: var(--line); }
+.tl-item { position: relative; padding: 0 0 20px 44px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-dot {
+  position: absolute; left: 4px; top: 4px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--panel); border: 2px solid var(--line-strong);
+  display: grid; place-items: center; font-size: 10px; font-family: var(--mono); color: var(--muted);
+}
+.tl-item.is-ok .tl-dot { border-color: var(--ok); color: var(--ok); }
+.tl-item.is-wip .tl-dot { border-color: var(--wip); color: var(--wip); }
+.tl-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tl-head h3 { margin: 0; font-size: 16px; }
+.tl-note { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.tl-date { font-family: var(--mono); font-size: 12.5px; color: var(--muted); }
+
+/* -------------------------------------------------------------------- 表格 */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14.5px; }
+th, td { padding: 13px 16px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; background: var(--panel-2); }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: var(--panel-2); }
+td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.table-wrap table th:first-child, .table-wrap table td:first-child { white-space: nowrap; }
+.src-chip { font-size: 12px; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 999px; padding: 2px 9px; display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+
+/* ----------------------------------------------------------------- 配件卡 */
+.parts-group > header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+.parts-group > header h3 { margin: 0; font-size: 16.5px; }
+.part-item { padding: 13px 0; border-top: 1px solid var(--line); }
+.part-item:first-of-type { border-top: 0; padding-top: 0; }
+.part-row1 { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.part-model { font-weight: 700; font-size: 14.5px; }
+.part-price { font-family: var(--mono); font-size: 13.5px; color: var(--ink-2); white-space: nowrap; }
+.part-spec { margin: 4px 0 8px; color: var(--muted); font-size: 13.5px; }
+.part-row3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ------------------------------------------------------------------ 图片区 */
+.photo-card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+.photo-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.photo-card .ph {
+  aspect-ratio: 4 / 3; display: grid; place-items: center; text-align: center; padding: 18px;
+  border-bottom: 1px solid var(--line); color: var(--muted); font-size: 13px;
+  background: repeating-linear-gradient(135deg, transparent 0 12px, var(--bg-soft) 12px 24px);
+}
+.photo-meta { padding: 13px 16px 16px; }
+.photo-meta strong { display: block; font-size: 14.5px; }
+.photo-meta .hint { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+/* -------------------------------------------------------------------- 说明 */
+.notice {
+  border: 1px solid var(--line-strong); border-left: 4px solid var(--plan);
+  background: var(--panel); border-radius: var(--radius-sm); padding: 14px 18px; font-size: 14px; color: var(--ink-2);
+}
+.notice strong { color: var(--ink); }
+.list-plain { margin: 8px 0 0; padding-left: 20px; color: var(--ink-2); font-size: 14.5px; }
+.list-plain li { margin-bottom: 5px; }
+.kv { display: grid; gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+.kv-row { display: grid; grid-template-columns: 150px 1fr 220px; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.kv-row:last-child { border-bottom: 0; }
+.kv-row .k { font-weight: 700; font-size: 14px; }
+.kv-row .v { color: var(--ink-2); font-size: 14.5px; }
+.kv-row .s { text-align: right; }
+@media (max-width: 760px) { .kv-row { grid-template-columns: 1fr; } .kv-row .s { text-align: left; } }
+
+/* --------------------------------------------------------------------- 页脚 */
+.footer { background: var(--panel); border-top: 1px solid var(--line); padding: 48px 0 40px; margin-top: 20px; }
+.footer-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 28px; }
+.footer h4 { font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.footer li { font-size: 14px; }
+.footer .note { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; }
+.license-statement {
+  margin-top: 22px; padding: 18px 20px; border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong); background: var(--panel-2); font-weight: 600; color: var(--ink);
+}
+
+/* ------------------------------------------------------------------- 响应式 */
+@media (max-width: 980px) {
+  .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 981px) {
+  .rail { grid-auto-flow: row; grid-auto-columns: auto; overflow: visible;
+          grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; }
+  .rail-hint { display: none; }
+}
+@media (max-width: 640px) {
+  body { font-size: 15.5px; }
+  .wrap { padding: 0 18px; }
+  .section { padding: 48px 0; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .rail { margin: 0 -18px; padding-left: 18px; padding-right: 18px; grid-auto-columns: 88%; }
+  .nav-inner { padding: 10px 18px; gap: 10px; }
+  .nav-links { width: 100%; margin-left: 0; overflow-x: auto; }
+  .nav-links a { white-space: nowrap; }
+  table { min-width: 620px; }
+}
+
+/* ============================================================================
+ * 单文件版补充样式（原四页合并为一页后新增）
+ * 1) 锚点定位：sticky 导航会盖住目标区块标题，用 scroll-margin-top 让开；
+ *    导航高度由下面那段小脚本写进 --navh，手机 / 桌面都刚好让开一行。
+ * 2) 手机上导航改成一行可横滑，避免导航栏占掉太多首屏高度。
+ * ========================================================================== */
+:root { --navh: 84px; }
+[id] { scroll-margin-top: calc(var(--navh) + 14px); }
+.nav-links a { scroll-margin-top: 0; }
+
+/* 窄屏：导航链接排成一行、可以横向滑动（原样式只写了 overflow-x，没关掉换行） */
+@media (max-width: 640px) {
+  .nav-links { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-inner { gap: 8px; }
+}
+
+/* 页内锚点跳转时给目标区块一个轻微的落点提示 */
+.section:target { box-shadow: inset 0 3px 0 0 var(--brand); }
+/* 窄屏下表格容器允许横向滑动，且不撑破页面 */
+.table-wrap { max-width: 100%; -webkit-overflow-scrolling: touch; }
+</style>
+</head>
+<body data-page="home">
+
+<!-- ======================= 页头（全站唯一一个） ======================= -->
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#home">
+      <span class="brand-dot" aria-hidden="true">MD</span>
+      <span>Microduck 复刻记录<small>JOE LIU · PERSONAL BUILD LOG</small></span>
+    </a>
+    <nav class="nav-links" aria-label="页面内导航">
+      <a href="#home" data-nav="home">首页</a>
+      <a href="#进度" data-nav="progress">复刻进度</a>
+      <a href="#配件与花费" data-nav="parts">配件与花费</a>
+      <a href="#软件实测" data-nav="software">软件实测</a>
+      <a href="#关于作者" data-nav="author">关于作者</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ============================ 首页 ============================ -->
+  <div class="hero" id="home">
+    <div class="wrap" id="mount-hero"></div>
+  </div>
+  <div class="wrap" id="mount-notice" style="margin-top:18px"></div>
+
+  <section class="section" style="padding-top:36px">
+    <div class="wrap" id="mount-goals"></div>
+    <!-- 原多页面版里首页通向其它三页的三个按钮，合并后改成页内锚点 -->
+    <div class="wrap actions" style="margin-top:26px">
+      <a class="btn btn-primary" href="#进度">查看完整进度与官方资料速览<span class="btn-arrow">↓</span></a>
+      <a class="btn btn-ghost" href="#配件与花费">查看完整对照表与采购状态<span class="btn-arrow">↓</span></a>
+      <a class="btn btn-ghost" href="#软件实测">查看软件实测详情<span class="btn-arrow">↓</span></a>
+    </div>
+  </section>
+
+  <!-- ==================== 复刻进度（原「复刻进度」页） ==================== -->
+  <section class="section alt" id="进度">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">PART 1 · BUILD PROGRESS &amp; AUTHOR</p>
+        <h2 class="sec-title">复刻进度与关于作者</h2>
+        <p class="sec-sub">这一部分回答两个问题：现在做到哪了，以及我是谁、我的产出在哪里（作者与我的项目卡片见本页后面的「关于作者」区块）。所有「我」的数字都来自本文件内嵌的数据块（原 assets/data.js），没有依据的地方如实写成待补充。</p>
+      </div>
+      <div id="mount-progress-full"></div>
+    </div>
+  </section>
+
+  <!-- ============================ 实拍图区 ============================ -->
+  <section class="section" id="实拍图">
+    <div class="wrap" id="mount-photos"></div>
+  </section>
+
+  <!-- ================= 配件与花费（原「配件与花费」页） ================= -->
+  <section class="section alt" id="配件与花费">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">PART 2 · PARTS, SPEND &amp; STATUS</p>
+        <h2 class="sec-title">配件与花费</h2>
+        <p class="sec-sub">按原版一致路线分组的 6 组配件清单：每项都标出「原版路线建议」与「我的选择」，并标明它属于原版同款、国产替代还是待确认。原版路线的配件分组沿用公开资料与社区复刻记录；每一项都标明「我的选择」和类别。购买凭证还没整理，所以金额、小计与下单日期仍是待补充。</p>
+      </div>
+
+      <div class="sec-head" style="margin-top:8px">
+        <p class="eyebrow">SPEND SUMMARY · 花费汇总</p>
+        <h3 class="sec-title">花了多少</h3>
+        <p class="sec-sub">总预算 / 已花费 / 待花费三个数字都在本文件内嵌的数据块里填；没填时显示待补充，不显示 ¥0。</p>
+      </div>
+      <div id="mount-spend"></div>
+
+      <div class="sec-head" style="margin-top:44px">
+        <p class="eyebrow">BILL OF MATERIALS · 配件清单对照表</p>
+        <h3 class="sec-title">原版路线 vs 我的选择</h3>
+        <p class="sec-sub">左右滑动可看完整表格（手机上）。「原版路线」一列的来源都写在行内，「我的选择」列只写实际采购的东西；两者不一致时按类别标签标出来，不下「这是替代件」的结论。</p>
+      </div>
+      <div id="mount-parts-table"></div>
+
+      <div class="sec-head" style="margin-top:44px">
+        <p class="eyebrow">HARDWARE STATUS · 6 个分组</p>
+        <h3 class="sec-title">按分组的配件状态</h3>
+        <p class="sec-sub">每项两行：上面是型号与规格、下面是到货与验证状态。类别标签只说明它跟原版路线一致不一致，不代表已经验证通过。</p>
+      </div>
+      <div id="mount-parts"></div>
+
+      <div class="sec-head" style="margin-top:44px">
+        <p class="eyebrow">PURCHASE STATUS · 采购状态表</p>
+        <h3 class="sec-title">下单与到货</h3>
+        <p class="sec-sub">状态只用「采购中 / 未到货 / 还没到位 / 还没到 / 待补充」这一档描述，不写成已到货或已完成。</p>
+      </div>
+      <div id="mount-purchases"></div>
+    </div>
+  </section>
+
+  <!-- ===================== 国产替代设想（独立分支） ===================== -->
+  <section class="section" id="国产替代">
+    <div class="wrap" id="mount-domestic"></div>
+  </section>
+
+  <!-- ============== 软件实测与 ducklink（原「软件实测」页） ============== -->
+  <section class="section alt" id="软件实测">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">PART 2 · SOFTWARE &amp; DUCKLINK</p>
+        <h2 class="sec-title">软件实测与 ducklink</h2>
+        <p class="sec-sub">这一部分是「要测什么」和「怎么验证」的清单。配件还没到货，所以四个方向都还没有实测数字，一律显示待补充。</p>
+      </div>
+      <div id="mount-ducklink"></div>
+      <div id="mount-software" style="margin-top:44px"></div>
+    </div>
+  </section>
+
+  <!-- ======================= 公开资料直接下载 ======================= -->
+  <section class="section" id="公开资料">
+    <div class="wrap" id="mount-downloads"></div>
+  </section>
+
+  <!-- ========================= 官方规格速览 ========================= -->
+  <section class="section alt" id="官方资料">
+    <div class="wrap" id="mount-official-facts"></div>
+  </section>
+
+  <!-- =========================== 三个入口 =========================== -->
+  <section class="section" id="入口">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">ENTRANCES · 入口</p>
+        <h2 class="sec-title">三个入口，分开放</h2>
+        <p class="sec-sub">我的仓库是我自己的产出；官方资料是原版项目；社区二创是别人的实验。三者不混在一起。</p>
+      </div>
+      <div id="mount-links"></div>
+    </div>
+  </section>
+
+  <!-- ========================== 关于作者 ========================== -->
+  <section class="section alt" id="关于作者">
+    <div class="wrap">
+      <div id="mount-author"></div>
+      <div id="mount-projects" style="margin-top:44px"></div>
+    </div>
+  </section>
+
+  <!-- ======================= 公开沟通与许可边界 ======================= -->
+  <section class="section" id="许可边界">
+    <div class="wrap" id="mount-license"></div>
+  </section>
+</main>
+
+<!-- ======================= 页脚（全站唯一一个） ======================= -->
+<footer class="footer">
+  <div class="wrap" id="mount-footer"></div>
+</footer>
+
+<script>
+/* ============================================================================
+ * Microduck 复刻记录站 · 数据文件（整个网站唯一的数据来源）
+ * ----------------------------------------------------------------------------
+ * ★ 改这里就能更新网站 ★
+ * 单文件版：本数据块已经内嵌进 HTML，页面会读取下面的 window.SITE_DATA，
+ * 并渲染成进度条、表格和卡片。要更新内容，就改 HTML 里这段数据块里的字。
+ *
+ * 【怎么改】
+ * 1. 用记事本 / VS Code / 文本编辑打开这个文件，只改引号中间的内容。
+ * 2. 别删掉引号、逗号、大括号、中括号；改完保存，刷新浏览器即可。
+ * 3. 不知道填什么就保持原样写「待补充」。页面会把「待补充」渲染成灰色
+ *    虚线徽章，而且不会把它算进完成度、也不会显示成 0 元或 0%。
+ *
+ * 【状态词汇表（只能填下面这些词，页面会自动配颜色）】
+ *   进度阶段 status：已完成 / 进行中 / 未开始 / 待补充
+ *     —— 「现在做到哪了」就是看 progress.stages 每一段的 status：
+ *        · 当前正在做的阶段写 进行中（可以有两段同时 进行中，例如「配件采购」+「到货验收」）
+ *        · 已经真正做完的写 已完成（只有写了 已完成 才会算进完成度百分比）
+ *        · 还没开始的写 未开始
+ *        · 没依据、说不清的写 待补充
+ *        同时记得改 progress.currentStage（当前阶段文字）和该段的 date。
+ *
+ * 【配件行新字段：variant 与 note】
+ *   parts[].items[] 里每一项都有两个额外字段：
+ *     variant：这一项属于哪一类，只填「原版同款」「国产替代」「待确认」三个词之一
+ *              · 原版同款 = 与官方公开路线一致的组件
+ *              · 国产替代 = 主动偏离原版路线、改用国产件的项目（页面上会高亮）
+ *              · 待确认   = 目前还说不准是否与原版一致
+ *     note   ：为什么这么选 / 这项的特别说明（例如「原版电机买不到，改用国产替代」）
+ *   页面会自动统计「国产替代」项并在配件页顶部给出偏离提醒，不用手写。
+ *   配件到货 status：已到货 / 在路上 / 待下单 / 待补充
+ *   软件实测 badge ：实测通过 / 已跑通 / 部分通过 / 未开始 / 待补充
+ *   鸭link 状态     ：开发中 / 待补充
+ *
+ * 【重要提醒】
+ * 这个站里凡是「我」的数据（我的进度、我买的配件、我的花费、我的实测
+ * 数字）都必须由你自己填。文件里所有「待补充」都是留给你的空位，
+ * 请不要把它当成已经完成的事实。
+ * ========================================================================== */
+
+window.SITE_DATA = {
+
+  /* ---------------------------------------------------------------- 站点信息 */
+  meta: {
+    siteName: "Microduck 复刻记录",
+    pageTitleSuffix: "Microduck 复刻记录 · Joe刘",
+    // 顶部一句话定位（首页大标题下方的那句）
+    tagline: "一只开源机器鸭的个人复刻记录：配件清单、花费、板端实测与踩坑，全部按公开资料核对后记录。",
+    // 顶部状态徽章：做出成果后改成例如「复刻成功 · 实机测试通过 · 2026.10.01」
+    statusBadge: "进行中 · 到货验收阶段 · 更新于 2026-09-25",
+    lastUpdated: "2026-09-25",
+    // 全站统一免责声明
+    disclaimer: "本站是非官方个人复刻记录，所有数据以公开资料为准；凡未亲自验证的内容均标注「待补充」或「待核实」，不作既成事实。",
+    // 首页三个入口按钮
+    heroActions: [
+      { label: "查看我的 GitHub", url: "https://github.com/Joeliews", kind: "primary" },
+      { label: "Microduck 官网", url: "https://pollen-robotics.com/microduck", kind: "ghost" },
+      { label: "浏览器模拟器", url: "https://huggingface.co/spaces/pollen-robotics/microduck-simulator", kind: "ghost" }
+    ]
+  },
+
+  /* ------------------------------------------------------- 项目目标（三件事） */
+  goals: [
+    {
+      num: "01",
+      title: "尽可能还原原版",
+      text: "优先采用有公开证据支持的组件与参数，让机械、电子与软件结构尽量贴近官方公布的路线。"
+    },
+    {
+      num: "02",
+      title: "全过程持续公开",
+      text: "采购、装配、测试与踩坑都留记录。数据没到手就写「待补充」，不用推测填满版面。"
+    },
+    {
+      num: "03",
+      title: "探索国产替代路线",
+      text: "单独验证国产零件与控制链路。这部分与原版一致清单分开陈列，不混在一起，也不冒充官方配置。"
+    }
+  ],
+
+  /* -------------------------------------------------------- 第一部分：作者 */
+  author: {
+    name: "Joe刘",
+    // 他在 GitHub 上的账号主页
+    github: "https://github.com/Joeliews",
+    // 他自己的复刻仓库（目前是空的，内容待推送）
+    repo: "https://github.com/Joeliews/Microduck-Joe-lite",
+    repoName: "Microduck-Joe-lite",
+    repoStatus: "仓库已建，内容待推送",
+    // 一句话介绍：只用已经确认过的背景，其他保持待补充
+    bio: "中文使用者，常驻中国。平时折腾嵌入式开发板、镜像烧写，以及在板子上部署模型，也写飞书自建应用。现在在做 Microduck 的精简版复刻。",
+    techFocus: [
+      "嵌入式开发板与镜像烧写",
+      "板端模型部署与推理",
+      "飞书自建应用",
+      "开源机器鸭 Microduck 复刻"
+    ],
+    // 联系方式保持待补充，不要替他编
+    contact: "待补充",
+    location: "中国（具体城市未在公开信息中确认）",
+    // 「我的项目」卡片：数据来自 GitHub 公开主页（2026-09-24 读取），可自行增删
+    projects: [
+      {
+        name: "Microduck-Joe-lite",
+        url: "https://github.com/Joeliews/Microduck-Joe-lite",
+        desc: "Microduck 精简版（lite）复刻仓库。",
+        lang: "待补充",
+        updated: "待补充",
+        status: "仓库已建，内容待推送"
+      },
+      {
+        name: "LIUhaoImages",
+        url: "https://github.com/Joeliews?tab=repositories",
+        desc: "各种功率半导体封装技术文章相关的图片。",
+        lang: "未标注语言",
+        updated: "待补充（GitHub 列表页未显示更新时间）",
+        status: "公开仓库"
+      },
+      {
+        name: "pyaedt（fork）",
+        url: "https://github.com/Joeliews?tab=repositories",
+        desc: "AEDT Python Client Package，fork 自 ansys/pyaedt。",
+        lang: "Python",
+        updated: "待补充（GitHub 列表页未显示更新时间）",
+        status: "公开仓库 · MIT License"
+      }
+    ],
+    projectsNote: "以上卡片读取自 GitHub 公开主页（2026-09-24）。仓库更新时间 GitHub 页面未渲染出来，故标为待补充；可以自行补填。"
+  },
+
+  /* ------------------------------------------- 第二部分：BUILD PROGRESS */
+  progress: {
+    headline: "现在做到哪了",
+    sub: "当前处于「到货验收」阶段：舵机还没到货。把每段的 status 改成「已完成 / 进行中 / 未开始」，完成度条会自动跟着变；一个阶段都没标「已完成」时不显示百分比，只显示「待补充」。",
+    // 参考原版官网那种「已完成 · 第 N 阶段 / 共 N 阶段」的写法
+    // 自己填：把 currentStage 改成当前阶段序号（如 3），阶段没填就保留 "待补充"
+    currentStage: "到货验收（第 3 阶段 / 共 10 阶段）",
+    currentStageName: "到货验收阶段",
+    totalStages: 10,
+    stageNote: "阶段划分待确认：第 1 阶段「资料调研」是否算已完成没有依据，先标为待补充；当前正在做的是第 2、3 阶段。",
+    // 官方具名行为的通过数：做出结果后填数字，例如 { passed: 2, total: 6 }
+    policiesPassed: "待补充",
+    // 复刻过程里的真实卡点：如实记录，不做美化
+    blockers: [
+      { title: "原版电机国内买不到", text: "原版路线所用的电机型号在国内难以采购，主线的执行器因此改用国产替代（飞特 1910）。这是复刻过程里的真实卡点，按「全过程持续公开」的定位如实记录。" }
+    ],
+    stages: [
+      { id: 1, name: "资料调研", note: "读官方仓库与文档、press kit、社区复刻记录，先把规格与许可边界搞清楚。阶段划分待确认：这一段是否算已完成没有依据。", status: "待补充", date: "待补充" },
+      { id: 2, name: "配件采购", note: "飞特 1910 装机舵机采购中；Radxa ZERO 3W 采购中；HAT 板还没到位；imu_to_dxl 还没到。", status: "进行中", date: "2026-09-25 记录" },
+      { id: 3, name: "到货验收", note: "当前阶段：舵机尚未到货，尚未归零；整机装配还无法开始。", status: "进行中", date: "2026-09-25 记录" },
+      { id: 4, name: "结构组装", note: "等配件到货后才能开始；3D 打印结构件与机械公差复核都还没做。", status: "未开始", date: "待补充" },
+      { id: 5, name: "固件与 SDK 跑通", note: "烧录系统镜像、跑官方 daemon、舵机归零与总线通讯，均未开始。", status: "未开始", date: "待补充" },
+      { id: 6, name: "强化学习策略", note: "仿真训练与 ONNX 板端部署都还没开始。", status: "未开始", date: "待补充" },
+      { id: 7, name: "NPU 视觉推理", note: "板端 NPU 实算还没开始。", status: "未开始", date: "待补充" },
+      { id: 8, name: "相机与视频链", note: "相机出图、编码与串流都还没开始。", status: "未开始", date: "待补充" },
+      { id: 9, name: "手柄与声音", note: "手柄配对与音频链路还没开始。", status: "未开始", date: "待补充" },
+      { id: 10, name: "ducklink 多端 app", note: "应用本身按「开发中」记录（见「软件实测」区块）；在板端复刻进度上尚未开始。", status: "未开始", date: "待补充" }
+    ]
+  },
+
+  /* ------------------------------------------------ 第三部分：实拍图占位 */
+  // 有照片后：把图片放进 assets/photos/ 目录，再把 src 填成 "assets/photos/xxx.jpg"
+  duckPhotos: {
+    headline: "这就是我的鸭子",
+    sub: "还没有实拍图。放上照片后这里会自动替换成图片卡片。",
+    sizeHint: "建议尺寸 1600 × 1200（4:3），JPG，单张 ≤ 500 KB；放进 assets/photos/ 目录。",
+    photos: [
+      { label: "整机正面", src: "", caption: "实拍图待补充", fileHint: "assets/photos/duck-01.jpg" },
+      { label: "侧面 45°", src: "", caption: "实拍图待补充", fileHint: "assets/photos/duck-02.jpg" },
+      { label: "头部与鸭嘴细节", src: "", caption: "实拍图待补充", fileHint: "assets/photos/duck-03.jpg" },
+      { label: "工作台与台架", src: "", caption: "实拍图待补充", fileHint: "assets/photos/duck-04.jpg" }
+    ]
+  },
+
+  /* ----------------------------------- 第四部分：配件与花费（原版一致路线） */
+  spend: {
+    currency: "¥",
+    // 数据不足时保持 "待补充"，页面不会显示成 0
+    totalBudget: "待补充",
+    spent: "待补充",
+    remaining: "待补充",
+    note: "原版一致路线的可追溯花费。金额字段留空 / 写「待补充」时，页面显示「待补充」，不会显示成 ¥0。"
+  },
+
+  // 配件分组：分组结构与原版路线配件项参考公开资料与社区复刻记录；
+  // 单价、小计、到货状态一律待补充 —— 这些必须由你自己填。
+  parts: [
+    {
+      num: "01",
+      group: "执行器与测试台架",
+      items: [
+        { model: "装机电机 / 舵机 ×15", mine: "飞特 1910 ×15（国产替代）", spec: "原版路线：官方仓库写明「50 Hz 控制环驱动十五个舵机」；总线为 Dynamixel protocol v2，15 个关节 / 16 个设备共用一条 UART（/dev/ttyS2，1 Mbps）。公开训练文件点名 Dynamixel XL330 的 M288-T 变体：15 只里 14 只进策略空间（双腿 10 + 头颈 4），另 1 只控制鸭嘴。XL330-M288-T 单只 18 g、20×34×26 mm、288.4:1 减速、6 V 下堵转 0.60 N·m、空载 123 rpm、输入 3.7–6.0 V。零售约 $23.9/只，15 只合计约 $412 —— 与整机 $399 的售价相当。", price: "待补充", status: "未到货 · 尚未归零", src: "官方仓库 README + 第三方拆解 + ROBOTIS e-Manual", variant: "国产替代", note: "原版电机买不到，改用国产替代（飞特 1910）。它与原版指向的 XL330 系列不是同一型号，总线协议、力矩与重量特性都不同，能否沿用原版策略待确认。" },
+        { model: "舵机型号对照（原版 vs 我的）", mine: "未采用 XL330", spec: "原版路线指向 Dynamixel XL330-M288-T：第三方拆解写明「公开训练文件中点名 M288-T 变体」，中文装机教程的实际配置也是 14 颗 XL330-M288-T（双腿 10 + 头颈 4）。官方 press kit 本身只写 15 个自由度，没有点名型号。", price: "待补充", status: "待补充", src: "第三方拆解 / 中文装机教程", variant: "待确认", note: "这一型号我没有采购 —— 走的是国产替代路线，所以原版型号只作为对照留在这里。" },
+        { model: "总线调试器 + 舵机测试台架", mine: "待补充", spec: "原版路线：官方仓库给出「从空白板搭建开发板」的流程（docs/robot/install-dev.md）；中文装机教程用 ROBOTIS OpenRB-150 经 USB 接控制板驱动舵机总线，单舵机归零常用 U2D2 + PHB 一类调试器。", price: "待补充", status: "待补充", src: "官方文档 + 中文装机教程", variant: "待确认" },
+        { model: "舵机线 / 5V 适配器 / 万用表", mine: "待补充", spec: "台架走线与电气检查用。", price: "待补充", status: "待补充", src: "通用件", variant: "待确认" }
+      ]
+    },
+    {
+      num: "02",
+      group: "主控与 Robot HAT",
+      items: [
+        { model: "主控板（SoC 规格）", mine: "Radxa ZERO 3W（采购中）", spec: "官方 press kit：Rockchip RK3566 + AI 加速器；4 核 Cortex-A55；1 GB RAM / 32 GB 存储。我选的是 Radxa ZERO 3W；板型号来自社区复刻记录，官方文档只写「Radxa」，未点名板型。", price: "待补充", status: "采购中", src: "官方 press kit + 我的采购记录", variant: "待确认" },
+        { model: "机器人 HAT 扩展板", mine: "待补充", spec: "官方仓库含「搭建开发板」文档；第三方整理页称仓库内还有 RPI Robot HAT 的 KiCad 工程（含生产 gerber 与 BOM，可自行打板），这一条本次未逐文件核对。我这块还没到位。", price: "待补充", status: "还没到位", src: "官方文档 + 第三方整理页 · 待核实 + 我的采购记录", variant: "待确认" },
+        { model: "microSD 卡", mine: "待补充", spec: "32 GB 级高耐久卡，用于烧录系统镜像。", price: "待补充", status: "待补充", src: "通用件", variant: "待确认" },
+        { model: "2×20P 排针 / 排母", mine: "待补充", spec: "主控与 HAT 堆叠连接。", price: "待补充", status: "待补充", src: "通用件", variant: "待确认" }
+      ]
+    },
+    {
+      num: "03",
+      group: "机械与轮滑附件",
+      items: [
+        { model: "结构件与外壳", spec: "3D 模型采用非商业许可，可自行打印；官方未单独发布打印文件包，需自行整理", price: "待补充", status: "待补充", src: "官方许可说明", variant: "待确认" },
+        { model: "M2 紧固件", spec: "整机装配用；实际规格与数量待盘点", price: "待补充", status: "待补充", src: "社区复刻记录 · 待核实", variant: "待确认" },
+        { model: "小型滚轮轴承", spec: "社区复刻记录为 MR126（6×12×4）一类", price: "待补充", status: "待补充", src: "社区复刻记录 · 待核实", variant: "待确认" },
+        { model: "脚部 / 轮滑支架", spec: "社区复刻记录提到 FPX330-H101K 一类金属支架", price: "待补充", status: "待补充", src: "社区复刻记录 · 待核实", variant: "待确认" }
+      ]
+    },
+    {
+      num: "04",
+      group: "视觉与姿态感知",
+      items: [
+        { model: "前置相机模组", spec: "官方确认有前置 / 广角相机，分辨率与视场官方标注为暂定值；社区复刻记录用 IMX219（8 MP / 77° / 22Pin）", price: "待补充", status: "待补充", src: "官方 + 社区", variant: "待确认" },
+        { model: "8×8 ToF 深度传感器", spec: "官方确认有 8×8 ToF，量程官方标注为暂定值；社区复刻记录型号为 VL53L8CX", price: "待补充", status: "待补充", src: "官方 + 社区", variant: "待确认" },
+        { model: "身体 IMU", spec: "官方确认整机有两颗 IMU（跟踪运动与姿态）；社区复刻记录为 BMI088 一类", price: "待补充", status: "待补充", src: "官方 + 社区", variant: "待确认" },
+        { model: "头部 IMU / IMU 转总线小板", mine: "imu_to_dxl（还没到）", spec: "官方文档提到 imu_to_dxl 板；该 PCB 据沟通记录未开源、无单独售卖，兼容板需自行研究。我这块还没到。", price: "待补充", status: "还没到", src: "沟通记录 · 待核实 + 我的采购记录", variant: "待确认" }
+      ]
+    },
+    {
+      num: "05",
+      group: "供电、音频与交互",
+      items: [
+        { model: "电池组", spec: "社区复刻记录采用 NP-F550 一类 2S 电池；官方未公开供电规格", price: "待补充", status: "待补充", src: "社区复刻记录 · 待核实", variant: "待确认" },
+        { model: "充电器 / 电源分配", spec: "含电池触点与保护分配；参数待计算", price: "待补充", status: "待补充", src: "待核实", variant: "待确认" },
+        { model: "麦克风与扬声器", spec: "官方确认板载麦克风与扬声器；机器人以声音（非语言）交流", price: "待补充", status: "待补充", src: "官方", variant: "待确认" },
+        { model: "无线手柄", spec: "官方文档有 pair-a-gamepad 章节，用于手动遥控与调试", price: "待补充", status: "待补充", src: "官方文档", variant: "待确认" },
+        { model: "NFC 标签 / 读卡", spec: "官方确认有 NFC 交互；是板载两组读卡器还是仅可选标签，本次未核实", price: "待补充", status: "待补充", src: "待核实", variant: "待确认" }
+      ]
+    },
+    {
+      num: "06",
+      group: "板件与连接",
+      items: [
+        { model: "头部与鸭嘴 NFC 板", spec: "社区复刻记录为刚板 + 鸭嘴 FPC 形态", price: "待补充", status: "待补充", src: "社区复刻记录 · 待核实", variant: "待确认" },
+        { model: "整机线束", spec: "长度与接口按装配后实测裁切", price: "待补充", status: "待补充", src: "待补充", variant: "待确认" },
+        { model: "相机 / ToF 安装件", spec: "机内配合件", price: "待补充", status: "待补充", src: "待补充", variant: "待确认" },
+        { model: "电源板 / 电池触点板", spec: "供电分配与保护", price: "待补充", status: "待补充", src: "待核实", variant: "待确认" }
+      ]
+    }
+  ],
+
+  variantLegend: [
+    { label: "原版同款", desc: "与官方公开路线一致的组件" },
+    { label: "国产替代", desc: "主动偏离原版路线、改用国产件的项目（页面会高亮，并说明偏离原因）" },
+    { label: "待确认", desc: "目前还说不准是否与原版一致，等核实后再改" }
+  ],
+
+  partsLegend: [
+    { label: "官方", desc: "来源为官方仓库 / 文档 / press kit，可追溯到公开页面" },
+    { label: "社区复刻记录", desc: "来源为第三方复刻者的公开记录，仅作路线参考，未由官方确认" },
+    { label: "待核实", desc: "本次未能找到一手来源，仅作占位，写入页面前需再确认" }
+  ],
+
+  /* --------------------------------------------------------- 采购状态表 */
+  // 每行就是一次采购记录。价格和日期自己填，不确定就写「待补充」。
+  purchases: [
+    { id: "P-01", item: "主控板 Radxa ZERO 3W", status: "采购中", dateOrdered: "待补充", amount: "待补充", note: "RK3566 / 1 GB" },
+    { id: "P-02", item: "飞特 1910 装机舵机 ×15", status: "未到货 · 尚未归零", dateOrdered: "待补充", amount: "待补充", note: "到货后才能开始归零与台架验证" },
+    { id: "P-03", item: "机器人 HAT 扩展板", status: "还没到位", dateOrdered: "待补充", amount: "待补充", note: "" },
+    { id: "P-04", item: "imu_to_dxl 小板", status: "还没到", dateOrdered: "待补充", amount: "待补充", note: "该 PCB 官方未开源，兼容板需自行研究" },
+    { id: "P-05", item: "相机模组 / ToF 传感器", status: "待补充", dateOrdered: "待补充", amount: "待补充", note: "" },
+    { id: "P-06", item: "3D 打印结构件", status: "待补充", dateOrdered: "待补充", amount: "待补充", note: "" },
+    { id: "P-07", item: "电池与充电", status: "待补充", dateOrdered: "待补充", amount: "待补充", note: "" },
+    { id: "P-08", item: "台架与工具（调试器 / 万用表等）", status: "待补充", dateOrdered: "待补充", amount: "待补充", note: "" }
+  ],
+
+  /* -------------------------------------------- 第五部分：国产替代设想 */
+  domestic: {
+    headline: "国产替代设想",
+    badge: "设想 · 未采购 · 未打样 · 未装机 · 全部未验证",
+    budget: "预算未核算",
+    note: "下面只是方向性设想，用来记下以后想验证的路线。它与上面的「原版一致清单」完全分开：不代表已经买到、已经打过样、已经装过机，也不代表最终会采用。型号、参数、成本都要等实测。",
+    groups: [
+      {
+        num: "01",
+        group: "执行器与通信",
+        items: [
+          { model: "国产总线舵机（型号待筛选）", spec: "与官方 Dynamixel 总线的协议差异待调研", status: "设想 · 未验证" },
+          { model: "单总线 USB 转接方案", spec: "波特率与半双工时序待确认", status: "设想 · 未验证" },
+          { model: "舵机动力学重新标定", spec: "扭矩 / 摩擦 / 延迟曲线待测量", status: "设想 · 未验证" }
+        ]
+      },
+      {
+        num: "02",
+        group: "主控与接口",
+        items: [
+          { model: "主控替代方案", spec: "沿用 RK3566 或换国产 SoC，待比较", status: "设想 · 未验证" },
+          { model: "扩展板自研", spec: "原理图待定义，引脚映射待核对", status: "设想 · 未验证" },
+          { model: "GPIO / UART 电平链路", spec: "接口电平与保护待验证", status: "设想 · 未验证" }
+        ]
+      },
+      {
+        num: "03",
+        group: "供电与保护",
+        items: [
+          { model: "电池方案", spec: "形态与容量待选型", status: "设想 · 未验证" },
+          { model: "舵机直供支路", spec: "压降与峰值电流待计算", status: "设想 · 未验证" },
+          { model: "逻辑降压支路 + 保险 / 急停", spec: "保护参数待计算", status: "设想 · 未验证" }
+        ]
+      },
+      {
+        num: "04",
+        group: "感知与交互",
+        items: [
+          { model: "国产双 IMU 候选", spec: "身体 / 头部各一颗，待选型", status: "设想 · 未验证" },
+          { model: "国产 MIPI-CSI 相机候选", spec: "分辨率与驱动支持待确认", status: "设想 · 未验证" },
+          { model: "国产 8×8 ToF 阵列", spec: "量程与接口待筛选", status: "设想 · 未验证" },
+          { model: "国产 NFC 前端与天线", spec: "头部 / 鸭嘴位置待定义", status: "设想 · 未验证" }
+        ]
+      },
+      {
+        num: "05",
+        group: "机械与制造",
+        items: [
+          { model: "孔位与花键适配", spec: "与所选舵机逐位测量", status: "设想 · 未验证" },
+          { model: "打印材料与装配公差", spec: "需要重新标定", status: "设想 · 未验证" },
+          { model: "轴承与紧固件国产化", spec: "公差验收标准待定", status: "设想 · 未验证" }
+        ]
+      },
+      {
+        num: "06",
+        group: "软件与策略",
+        items: [
+          { model: "新总线的板端驱动", spec: "读写与故障保护待实现", status: "设想 · 未验证" },
+          { model: "50 Hz 多舵机闭环", spec: "吊架验证方案待定", status: "设想 · 未验证" },
+          { model: "新执行器仿真模型 + 策略重训", spec: "仿真参数与安全门槛待定义", status: "设想 · 未验证" }
+        ]
+      }
+    ]
+  },
+
+  /* ------------------------------------------------------ 第六部分：ducklink */
+  ducklink: {
+    eyebrow: "DUCKLINK · 多端 App",
+    headline: "连接每一只鸭子的多端 App",
+    sub: "从你手边的一只，到以后可能的一小群。手机 / 平板 / 电脑共用一个入口。",
+    platforms: ["手机", "平板", "电脑"],
+    status: "开发中",
+    // 还没有代码仓库就留空，页面会显示「仓库待补充」
+    repo: "",
+    repoLabel: "ducklink 代码仓库",
+    features: [
+      { title: "实时视频与在线控制", desc: "看鸭子眼里的画面，同时用手机摇杆 / 虚拟按键下发动作。" },
+      { title: "电量、温度与内存管理", desc: "板端状态一屏看完，异常时报警。" },
+      { title: "应用管理与驱动升级", desc: "策略与固件的安装、回滚，避免刷坏板子。" },
+      { title: "语音唤醒", desc: "用声音叫醒鸭子，配合板载麦克风与扬声器。" }
+    ],
+    note: "这一块目前只在设计阶段：功能清单是目标，不是已经跑通的结果。官方已经有一个命令行对应物 duckctl（蓝牙直连笔记本、不需要网络与 ssh）；ducklink 想做的是把同样的能力搬到手机 / 平板 / 电脑的图形界面里。"
+  },
+
+  /* --------------------------------------- 第七部分：软件状态（板端实测） */
+  software: {
+    eyebrow: "SOFTWARE STATUS · 板端实测更新",
+    headline: "软件实测记录",
+    sub: "每个方向都写清三件事：要测什么、怎么验证、当前记录。记录为空时显示「待补充」。",
+    board: "目标板端环境：Rockchip RK3566 / 1 GB RAM / 32 GB 存储（具体系统与版本待补充）",
+    blocks: [
+      {
+        num: "01",
+        title: "强化学习策略",
+        badge: "待补充",
+        what: "官方公开的具名行为：Walk（速度跟踪步态）、Sit & stand、Kick、Grab、Roller skating、Get back up，共 6 项；另有第三方口径称「7 种预训练行为」。",
+        how: "先用官方仿真入口 docs/robot/simulation.md 的 scripts/duck-sim（真 daemon 跑 MuJoCo 机身）验证，训练在 microduck_rl（MuJoCo + PPO），再按官方策略共享格式导出 ONNX，用官方策略接口（float32 obs[1,61] → actions[1,14]、50 Hz、观测归一化内嵌）部署到板端；上电顺序为吊架 → 低增益站立 → 落地。社区已有可参考的公开策略（爬台阶、用嘴投球），但它们都标注为 simulation-validated、hardware-unvalidated，只能当参考。",
+        record: ["已通过的行为数：待补充", "单次站立 / 行走持续时长：待补充", "训练耗时（参考：PPO 一条步态约 1–2 小时，4096 只并行虚拟鸭子）：待补充"]
+      },
+      {
+        num: "02",
+        title: "NPU 视觉推理",
+        badge: "待补充",
+        what: "把视觉模型导出到 RK3566 的 NPU 上做板端实算。RK3566 平台 NPU 约 0.8 TOPS，支持 INT8 / INT16。",
+        how: "定好输入尺寸与量化方式，先跑单张图片实算，再跑连续帧，记录延迟、内存占用与出错次数；官方是否提供现成的鸭子检测模型待核实。",
+        record: ["单帧推理延迟（p50 / p95）：待补充", "连续跑帧数与出错次数：待补充", "使用的模型与量化方式：待补充"]
+      },
+      {
+        num: "03",
+        title: "相机与视频链",
+        badge: "待补充",
+        what: "相机出图、分辨率与画面方向、硬编码，以及把画面串流到 ducklink 多端 app。",
+        how: "先本地取帧存图确认画面方向，再走编码 + 串流，最后在 ducklink 里看延迟与流畅度。",
+        record: ["实拍分辨率与首张图日期：待补充", "编码 / 串流帧率与端到端延迟：待补充", "摄像头型号与接口：待补充"]
+      },
+      {
+        num: "04",
+        title: "手柄与声音",
+        badge: "待补充",
+        what: "无线手柄配对与遥控、板载麦克风录音、扬声器播放与音色调试。",
+        how: "按官方 docs/robot/pair-a-gamepad.md 配对，用官方命令速查里的 robotctl 驱动，验证按键 → 动作链路；再用麦克风录音、扬声器回放（官方有 voice / chorale / theremin 一类语音命令），检查音量与延迟。",
+        record: ["手柄型号与配对结果：待补充", "录音 / 回放测试结果：待补充", "可播放的声音文件数量与总时长：待补充"]
+      }
+    ]
+  },
+
+  /* ------------------------------------- 第八部分：公开资料直接下载 / 入口 */
+  // note 字段写清楚「点进去能拿到什么」；不确定可达性的链接都标了待核实。
+  downloads: {
+    eyebrow: "PUBLIC RESOURCES · 公开资料入口",
+    headline: "公开资料，直接下载",
+    sub: "下面是原版路线上真正有用的公开入口。官方目前没有公开 BOM、组装说明与 3D 打印文件包，这一点也写在下面。",
+    items: [
+      { name: "官方主仓库 pollen-robotics/microduck", url: "https://github.com/pollen-robotics/microduck", what: "鸭子的大脑：Rust daemon（robotd 控制环与电机总线、updaterd 签名更新与回滚、configd、btd、padd 手柄、mediad 相机 WebRTC 串流、tofd 深度传感器），50 Hz 控制环驱动 15 个舵机。", note: "已确认可访问（README 与文档页可读）" },
+      { name: "中文装机教程 Microduck-build-tutorial", url: "https://github.com/AI-FanGe/Microduck-build-tutorial", what: "中文装机与第一次运行指南：重建版 BOM（Raspberry Pi Zero 2 W + ROBOTIS OpenRB-150 + XL330-M288-T ×14，可选嘴部 1 颗 + BNO08x IMU + 3D 打印件）、15 个舵机的 ID 映射与总线接线、预构建系统镜像 microduck.img.xz、walk.onnx 行走模型与 mjlab 训练环境，仓库内含 3D 打印文件。", note: "第三方项目（非官方），走的是 Pi Zero 2 W 而不是 RK3566 的相对低成本路线；对「精简版复刻」很有参考价值" },
+      { name: "官方文档：搭建开发板 install-dev.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/robot/install-dev.md", what: "从空白板到能接受分支构建的开发板，是自建（而不是买整机）路线的入口。", note: "已确认存在（官方 README 链接指向）" },
+      { name: "官方文档：手柄配对 pair-a-gamepad.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/robot/pair-a-gamepad.md", what: "手柄配对与完整按键映射，以及配对失败时的排查。", note: "已确认存在（官方 README 链接指向）" },
+      { name: "官方文档：仿真 simulation.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/robot/simulation.md", what: "桌面没有鸭子时，用 scripts/duck-sim 让真 daemon 跑在 MuJoCo 机身上（一只开窗，或四只当作可登录的机器）。", note: "已确认存在（官方 README 链接指向）" },
+      { name: "官方命令速查 cheatsheet.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/robot/cheatsheet.md", what: "robotctl 的全部命令：驱动、配置、语音、更新、日志；也是查手柄按键映射的地方。", note: "已确认存在（官方 README 链接指向）" },
+      { name: "舵机拆解报道：399 美元的鸭子，412 美元的舵机", url: "https://www.newsoftoday.com/139389316/dollar399-robot-dollar412-worth-of-servos", what: "拆解 Microduck 的执行器与策略：15 只 Dynamixel XL330（14 只进策略、1 只控制鸭嘴），公开训练文件点名 M288-T 变体；15 只舵机零售约 412 美元，而整机卖 399 美元。", note: "第三方报道（2026-09-21），本站只引用其公开描述、未复制任何实测数据" },
+      { name: "XL330-M288-T 官方规格（ROBOTIS e-Manual）", url: "https://emanual.robotis.com/docs/en/dxl/x/xl330-m288/", what: "原版执行器的官方参数表：18 g、20×34×26 mm、288.4:1、6 V 下堵转 0.60 N·m、空载 123 rpm、4096 pulse/rev、输入 3.7–6.0 V。", note: "已确认可访问" },
+      { name: "版式参照：超能花钱鸭 Fanduck", url: "https://duck.fandcode.com", what: "另一位复刻者（GitHub 7757/fanduck）的 Microduck 1:1 个人研究复刻记录站。本站的版式语言（浅色底、卡片、大留白、分组横滑）参照它。", note: "已确认可访问；仅参考排版，站内所有数据都没有采用该站内容" },
+      { name: "官方文档索引 docs/README.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/README.md", what: "文档总入口：cheatsheet、simulation、pair-a-gamepad、policy-manifest 等。", note: "已确认可读到正文" },
+      { name: "策略清单契约 docs/policy-manifest.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/policy-manifest.md", what: "官方 .onnx 策略文件旁边 manifest.json 的字段契约，自己训练的策略要照它发布。", note: "已确认存在（文档索引中列出）" },
+      { name: "官方架构与运行时设计文档", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/design/architecture.md", what: "architecture.md 与 robotd-design.md：单进程 / 单串口总线 / 50 Hz 控制循环的设计说明。", note: "已确认可读到正文" },
+      { name: "官方 RL 训练栈 pollen-robotics/microduck_rl", url: "https://github.com/pollen-robotics/microduck_rl", what: "官方强化学习训练环境（仓库自述：RL training environments for Microduck，基于 mjlab / MuJoCo）。训练好场次后导出 ONNX 部署到板端。", note: "已确认可访问（2026-09-25 复核）" },
+      { name: "浏览器模拟器 Microduck Sandbox", url: "https://huggingface.co/spaces/pollen-robotics/microduck-simulator", what: "官方 Hugging Face Space（docker SDK，标题 Microduck Sandbox），可在浏览器里直接跑仿真；Space 里的静态地址为 https://pollen-robotics-microduck-simulator.hf.space 。", note: "已确认存在（2026-09-25 复核，最后更新 2026-09-10）" },
+      { name: "社区资源索引 awesome-microduck", url: "https://github.com/joeynyc/awesome-microduck", what: "社区整理的 Microduck 相关链接索引，找二手资料先看这里。", note: "已确认存在，内容较全（官方 / 文档 / 仿真训练 / 策略 / 硬件与制造 / 文章等分类）" },
+      { name: "社区策略：爬台阶 + 头部支撑", url: "https://huggingface.co/Nupr-Haokun/microduck-step-up-head-brake", what: "双策略控制器：跨 25 mm 直角台阶，以及用头部作临时制动后站起；含 step_up_walk.onnx 与 step_up_stand_recovery.onnx。", note: "已确认可访问；作者标注 simulation-validated、hardware-unvalidated" },
+      { name: "社区 Space：Microquack 鸭叫", url: "https://huggingface.co/spaces/osolmaz/microquack", what: "Rust 写的 procedural droid-voice 引擎，浏览器端 WebAssembly 实时合成。HF API 记录的静态站地址为 https://osolmaz-microquack.static.hf.space 。", note: "已确认：Space 记录存在（static / MIT），静态站 https://osolmaz-microquack.static.hf.space 返回 200" },
+      { name: "社区策略：用嘴投球（beak-throw）", url: "https://huggingface.co/q2p/microduck-beak-throw", what: "让鸭子用鸭嘴抛出 24 mm 小球（约 0.53 m）再回到站立：含 beak_throw.onnx、alpha_stand.onnx、manifest.json 与运行时补丁；策略契约为 obs[1,61] → actions[1,14]、50 Hz、单次动作 2.4 s。源码在 GitHub llama/microduck-beak-throw。", note: "已确认可访问（2026-09-25 复核）；作者标注 simulation-validated、hardware-unvalidated，首次上机要求空嘴试验" },
+      { name: "官方产品页与 press kit", url: "https://pollen-robotics.com/microduck/press-kit", what: "官方规格与物料说明页；主控 RK3566、1 GB RAM / 32 GB 存储等表述来自这里。", note: "已确认可访问（press kit），部分参数官方标注为暂定值" },
+      { name: "官方预购商店", url: "https://store.pollen-robotics.com/products/microduck", what: "整机预购页：399 美元 / 欧盟 340 欧元（不含税与运费）。", note: "官方产品页给出的购买入口" },
+      { name: "官方社区 Discord", url: "https://discord.com/invite/pollen-community-519098054377340948", what: "Pollen 社区邀请链接，许可、硬件资料缺口这类问题通常在这里问。", note: "已确认存在" }
+    ],
+    gaps: [
+      "官方没有发布一站式 BOM 与逐步组装说明：「搭建开发板」流程与电子设计在官方仓库里，机械件需要自己从公开资源整理或导出；中文装机教程与第三方整理页给出的清单都是重建 / 推断版，采购前必须自行核对。",
+      "imu_to_dxl v2 这块 IMU 转总线小板据沟通记录未开源、也无单独售卖，兼容板只能自行研究。",
+      "相机分辨率与视场、ToF 量程、无线版本与 SDK 语言，官方 press kit 标注为仍在最终确认中，属暂定值。"
+    ]
+  },
+
+  /* ------------------------------------------- 官方规格速览（复刻进度区块） */
+  officialFacts: {
+    headline: "Microduck 官方资料速览",
+    sub: "以下条目全部来自公开来源，右侧标注来源；标「待核实」的是本次没能拿到一手来源的内容。",
+    rows: [
+      { k: "定位", v: "约 25 cm、约 800 g 的开源双足机器鸭，带抓取用鸭嘴，用强化学习策略驱动，可自行训练新动作", src: "官方仓库 README + 官方产品页" },
+      { k: "价格", v: "399 美元预购价（美国）；欧盟 340 欧元；不含税与运费", src: "官方产品页 / press kit / 媒体报道" },
+      { k: "预购与交付", v: "预购 2026-08-27 开启；官方目标首批在 2026 年圣诞节前（北美与欧洲）。「推迟 4–6 个月」是第三方博客对需求超载的描述，不是官方口径", src: "媒体报道 / 社区索引" },
+      { k: "主控", v: "Rockchip RK3566 + AI 加速器；4 核 Cortex-A55（最高 1.6 GHz）；1 GB RAM / 32 GB 存储", src: "官方 press kit + Radxa 产品页" },
+      { k: "NPU", v: "RK3566 平台 NPU 约 0.8 TOPS，支持 INT8 / INT16（FP16 亦有资料提及）", src: "RK3566 平台资料" },
+      { k: "关节", v: "整机 15 个自由度；官方仓库写明「50 Hz 控制环驱动十五个舵机」；15 个关节与 16 个设备共用一条 UART，Dynamixel protocol v2、1 Mbps", src: "官方仓库 README + 官方设计文档" },
+      { k: "执行器", v: "Dynamixel XL330 系列，公开训练文件点名 M288-T 变体：15 只中 14 只进策略空间、1 只控制鸭嘴。单只 18 g / 288.4:1 / 6 V 下堵转 0.60 N·m；15 只零售约 $412，接近整机 $399 的售价", src: "第三方拆解 + ROBOTIS e-Manual" },
+      { k: "运行架构", v: "Rust 多 daemon：robotd（控制环与舵机总线）、updaterd（签名更新与回滚）、configd、btd、padd（手柄）、mediad（相机 WebRTC 串流）、tofd（深度传感器），通过 Unix socket 上的 JSON-RPC 通信", src: "官方仓库 README" },
+      { k: "策略接口", v: "float32 obs[1,61] → actions[1,14]，控制频率 50 Hz，观测归一化内嵌在 ONNX 里", src: "社区策略页引用的官方接口" },
+      { k: "训练", v: "MuJoCo 仿真 + 强化学习（PPO），一条步态约 1–2 小时，用 4096 只并行虚拟鸭子；训练后导出 ONNX 部署到板端", src: "官方公告 / 媒体报道" },
+      { k: "具名行为", v: "官方产品页列出 6 项：Walk（速度跟踪步态）、Sit & stand、Kick、Grab、Roller skating、Get back up；官方仓库 README 另述：走路、滚轮滑行、叼取、自己站起来、坐下、踢球，以及「用自己的声音叫」；另有第三方口径称 7 种预训练行为", src: "官方产品页 + 官方仓库 README" },
+      { k: "传感器", v: "前置 / 广角相机、8×8 ToF 深度、两颗 IMU（运动与姿态）、板载麦克风与扬声器；Wi-Fi 与蓝牙", src: "官方 + 媒体报道" },
+      { k: "NFC", v: "官方确认有 NFC 交互；是板载两组读卡器还是仅可选标签，本次未核实", src: "待核实" },
+      { k: "许可", v: "软件（SDK / 仿真 / 训练栈）Apache-2.0；仿真 3D 模型 CC BY-SA-NC（非商业）。硬件方面：官方没有发布完整 BOM，仓库里给了「搭建开发板」流程，电子设计文件的公开范围以仓库实际内容为准", src: "媒体报道 + 官方仓库 README" }
+    ]
+  },
+
+  /* -------------------------------------------------- 许可边界与公开沟通 */
+  license: {
+    headline: "公开沟通与许可边界",
+    sub: "写清这个项目的法律与身份边界：哪些能做、哪些不能做，以及本站是什么。",
+    items: [
+      { title: "软件：Apache-2.0", text: "SDK、MuJoCo 仿真环境与完整 RL 训练管线以 Apache-2.0 发布：允许商业使用、修改与再分发。", src: "https://aieranews.com/open-source-robot-microduck-licenses" },
+      { title: "3D 模型：非商业许可", text: "仿真 3D 模型采用 Creative Commons BY-SA-NC，NC 即非商业：个人制作可以，销售不行。", src: "https://aieranews.com/open-source-robot-microduck-licenses" },
+      { title: "硬件资料：没有完整 BOM", text: "官方没有发布完整物料清单与逐步组装说明；仓库里给出了「从空白板搭建开发板」的流程。机械件要自己从公开资源整理或导出，第三方整理页称仓库内还含 RPI Robot HAT 的 KiCad 工程（含 gerber 与 BOM），但没有官方的一站式采购清单。", src: "https://github.com/pollen-robotics/microduck/blob/main/docs/robot/install-dev.md" }
+    ],
+    statement: "本站位于中国，仅用于个人学习与研究，是非官方复刻记录。不代表 Pollen Robotics 的任何授权、认证或商业背书。",
+    statementExtra: "本项目不做销售，也不提供整机或套件；站内涉及的第三方复刻记录仅作技术参考。"
+  },
+
+  /* ---------------------------------------------------------- 首页链接出口 */
+  links: {
+    mine: [
+      { label: "我的 GitHub 主页", url: "https://github.com/Joeliews", note: "Joeliews" },
+      { label: "我的复刻仓库", url: "https://github.com/Joeliews/Microduck-Joe-lite", note: "Microduck-Joe-lite · 仓库已建，内容待推送" }
+    ],
+    official: [
+      { label: "Microduck 官网", url: "https://pollen-robotics.com/microduck", note: "官方产品页" },
+      { label: "官方 press kit", url: "https://pollen-robotics.com/microduck/press-kit", note: "官方规格与物料" },
+      { label: "官方仓库", url: "https://github.com/pollen-robotics/microduck", note: "pollen-robotics/microduck" },
+      { label: "官方 RL 训练栈", url: "https://github.com/pollen-robotics/microduck_rl", note: "mjlab / MuJoCo 训练环境" },
+      { label: "浏览器模拟器", url: "https://huggingface.co/spaces/pollen-robotics/microduck-simulator", note: "Microduck Sandbox" }
+    ],
+    community: [
+      { label: "社区资源索引", url: "https://github.com/joeynyc/awesome-microduck", note: "awesome-microduck" },
+      { label: "爬台阶策略", url: "https://huggingface.co/Nupr-Haokun/microduck-step-up-head-brake", note: "双策略 ONNX" },
+      { label: "Microquack 鸭叫", url: "https://huggingface.co/spaces/osolmaz/microquack", note: "浏览器端语音合成" },
+      { label: "官方 Discord", url: "https://discord.com/invite/pollen-community-519098054377340948", note: "Pollen 社区" }
+    ]
+  },
+
+  /* --------------------------------------------------- 资料出处（可在页面展开） */
+  sources: [
+    { label: "Pollen Robotics 官方产品页", url: "https://pollen-robotics.com/microduck" },
+    { label: "Pollen Robotics 官方 press kit", url: "https://pollen-robotics.com/microduck/press-kit" },
+    { label: "官方仓库 docs/README.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/README.md" },
+    { label: "官方仓库 docs/design/robotd-design.md", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/design/robotd-design.md" },
+    { label: "Radxa ZERO 3W 产品页（RK3566 规格）", url: "https://radxa.com/products/zeros/zero3w/" },
+    { label: "社区策略页（策略接口契约）", url: "https://huggingface.co/Nupr-Haokun/microduck-step-up-head-brake" },
+    { label: "许可边界报道（Apache-2.0 / CC BY-SA-NC）", url: "https://aieranews.com/open-source-robot-microduck-licenses" },
+    { label: "硬件设计文件未公开的说明", url: "https://kingy.ai/blog/hugging-face-microduck-physical-ai-robot" },
+    { label: "售价与交付时间报道", url: "https://bytevyte.com/hugging-faces-399-microduck-robot-duck-hits-2-6-million-in-first-day-orders" },
+    { label: "社区资源索引 awesome-microduck", url: "https://github.com/joeynyc/awesome-microduck" },
+    { label: "中文装机教程 Microduck-build-tutorial", url: "https://github.com/AI-FanGe/Microduck-build-tutorial" },
+    { label: "执行器与策略拆解报道", url: "https://www.newsoftoday.com/139389316/dollar399-robot-dollar412-worth-of-servos" },
+    { label: "XL330-M288-T 官方规格", url: "https://emanual.robotis.com/docs/en/dxl/x/xl330-m288/" },
+    { label: "官方文档：搭建开发板", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/robot/install-dev.md" },
+    { label: "官方文档：手柄配对", url: "https://github.com/pollen-robotics/microduck/blob/main/docs/robot/pair-a-gamepad.md" },
+    { label: "版式参照：超能花钱鸭 Fanduck", url: "https://duck.fandcode.com" }
+  ]
+};
+</script>
+<script>
+/* ============================================================================
+ * Microduck 复刻记录站 · 渲染脚本
+ * ----------------------------------------------------------------------------
+ * 作用：读取内嵌的 window.SITE_DATA，把数据渲染成页面内容。
+ * 单文件版里这段脚本和 data.js、style.css 都内嵌在同一个 HTML 里；
+ * 要更新网站内容请编辑 HTML 里那段 window.SITE_DATA。
+ * 页面里每个渲染位置都对应一个 id（例如 mount-parts、mount-software），
+ * 找不到对应容器就自动跳过，所以同一份脚本可以给 4 个页面共用。
+ * ========================================================================== */
+(function () {
+  "use strict";
+
+  var D = window.SITE_DATA;
+  var TODO = "待补充";
+
+  function has(v) { return !(v === undefined || v === null || v === "" || (typeof v === "string" && v.trim() === "")); }
+  function txt(v) { return has(v) ? String(v) : TODO; }
+  function isTodo(v) { return !has(v) || /待补充|待核实/.test(String(v)); }
+
+  function mount(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+  function clear(node) { while (node.firstChild) { node.removeChild(node.firstChild); } }
+  function head(m, eyebrow, title, sub) {
+    if (!m) return;
+    clear(m);
+    if (eyebrow) m.appendChild(el("p", "eyebrow", eyebrow));
+    if (title) m.appendChild(el("h2", "sec-title", title));
+    if (sub) m.appendChild(el("p", "sec-sub", sub));
+  }
+  function extLink(href, label, cls, note) {
+    var a = el("a", cls || null, label);
+    a.href = href;
+    /* 单文件版：站内锚点链接（#xxx）不开新窗口，外链仍然新窗口打开 */
+    if (String(href).charAt(0) !== "#") { a.target = "_blank"; a.rel = "noopener"; }
+    if (note) a.title = note;
+    return a;
+  }
+  function btn(href, label, kind) {
+    var a = extLink(href, label, "btn " + (kind === "primary" ? "btn-primary" : "btn-ghost"));
+    a.appendChild(el("span", "btn-arrow", "↗"));
+    return a;
+  }
+
+  /* 状态 → 徽章配色（只认关键词，认不出来用中性色） */
+  function badgeClass(status) {
+    var s = String(status || "").trim();
+    if (!s || /待补充|待核实/.test(s)) return "b-todo";
+    if (/失败/.test(s)) return "b-bad";
+    if (/设想|未验证|未采购|未打样|未装机|待推送|未开始|待下单/.test(s)) return "b-plan";
+    if (/已到货|已完成|实测通过|验证通过|已跑通|成功|已确认|公开仓库|已连接/.test(s)) return "b-ok";
+    if (/进行中|开发中|在路上|部分通过/.test(s)) return "b-wip";
+    return "b-neutral";
+  }
+  function badge(status, cls) {
+    return el("span", "badge " + (cls || badgeClass(status)), txt(status));
+  }
+
+  /* 配件类别：原版同款 / 国产替代 / 待确认 */
+  function variantBadge(v) {
+    var val = has(v) ? String(v) : "待确认";
+    var cls = val === "原版同款" ? "v-orig" : (val === "国产替代" ? "v-dom" : "v-tbd");
+    return el("span", "badge " + cls, val);
+  }
+  function collectDeviations() {
+    var out = [];
+    ((D.parts) || []).forEach(function (g) {
+      (g.items || []).forEach(function (it) {
+        if (it.variant === "国产替代") out.push({ group: g.group, model: it.model, mine: it.mine, note: it.note });
+      });
+    });
+    return out;
+  }
+
+  /* 完成度：只有明确「已完成」的阶段才计入；一个都没填就不给百分比 */
+  function progressPct(stages) {
+    if (!stages || !stages.length) return null;
+    var done = stages.filter(function (s) { return s.status === "已完成"; }).length;
+    if (!done) return null;
+    return Math.round((done / stages.length) * 100);
+  }
+
+  function stageBarSVG(stages) {
+    var n = stages.length, w = 900, h = 54, gap = 6;
+    var seg = (w - gap * (n - 1)) / n;
+    var out = ['<svg viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="各阶段完成情况">'];
+    stages.forEach(function (s, i) {
+      var x = i * (seg + gap);
+      var color = "--line-strong", op = "0.6";
+      if (s.status === "已完成") { color = "--ok"; op = "1"; }
+      else if (s.status === "进行中") { color = "--brand"; op = "1"; }
+      out.push('<rect x="' + x + '" y="0" width="' + seg + '" height="24" rx="6" style="fill:var(' + color + ');opacity:' + op + '"></rect>');
+      out.push('<text x="' + (x + seg / 2) + '" y="46" text-anchor="middle" style="fill:var(--muted);font-size:16px;font-family:var(--mono)">' + (s.id || i + 1) + "</text>");
+    });
+    out.push("</svg>");
+    return out.join("");
+  }
+
+  function gaugeSVG(pct) {
+    var r = 52, c = 2 * Math.PI * r, known = typeof pct === "number";
+    var out = ['<svg viewBox="0 0 140 140" width="150" height="150" role="img" aria-label="复刻完成度">'];
+    out.push('<circle cx="70" cy="70" r="' + r + '" fill="none" stroke-width="14" style="stroke:var(--bg-soft)"></circle>');
+    if (known) {
+      var dash = c * pct / 100;
+      out.push('<circle cx="70" cy="70" r="' + r + '" fill="none" stroke-width="14" stroke-linecap="round" stroke-dasharray="' + dash + " " + (c - dash) + '" transform="rotate(-90 70 70)" style="stroke:var(--brand)"></circle>');
+    } else {
+      out.push('<circle cx="70" cy="70" r="' + r + '" fill="none" stroke-width="14" stroke-dasharray="6 9" transform="rotate(-90 70 70)" style="stroke:var(--line-strong)"></circle>');
+    }
+    out.push('<text x="70" y="67" text-anchor="middle" style="fill:var(--ink);font-size:' + (known ? 27 : 19) + 'px;font-weight:800">' + (known ? pct + "%" : TODO) + "</text>");
+    out.push('<text x="70" y="89" text-anchor="middle" style="fill:var(--muted);font-size:12px">完成度</text>');
+    out.push("</svg>");
+    return out.join("");
+  }
+
+  /* 数据还空着的时候给个明确提示，别让页面看起来像已经做完了 */
+  function dataPending() {
+    var stages = (D.progress && D.progress.stages) || [];
+    var anyDone = stages.some(function (s) { return s.status === "已完成"; });
+    var spendUnknown = !D.spend || isTodo(D.spend.spent);
+    return !anyDone && spendUnknown;
+  }
+
+  /* ------------------------------------------------------------------ 首页 */
+  function renderNav() {
+    var here = document.body.getAttribute("data-page");
+    Array.prototype.forEach.call(document.querySelectorAll(".nav-links a"), function (a) {
+      if (a.getAttribute("data-nav") === here) a.setAttribute("aria-current", "page");
+    });
+  }
+
+  function renderNotice() {
+    var m = mount("mount-notice");
+    if (!m || !dataPending()) return;
+    var box = el("div", "notice");
+    box.appendChild(el("strong", null, "数据状态："));
+    box.appendChild(el("span", null, "目前处于「到货验收」阶段，舵机还没到货。花费金额、采购日期、实拍图和四个软件方向的实测数字仍是空位（本文件内嵌数据块里的「待补充」），页面一律如实显示为待补充，既不算成 0，也不算成已完成。"));
+    clear(m); m.appendChild(box);
+  }
+
+  function renderHero() {
+    var m = mount("mount-hero");
+    if (!m || !D.meta) return;
+    clear(m);
+    var g = el("div", "hero-grid");
+
+    var left = el("div");
+    left.appendChild(el("p", "eyebrow", "PERSONAL BUILD LOG · MICRODUCK 复刻记录"));
+    var disp = el("h1", "display", "Microduck");
+    disp.appendChild(el("span", null, "精简版复刻记录"));
+    left.appendChild(disp);
+    left.appendChild(el("p", "lede", txt(D.meta.tagline)));
+
+    var line = el("div", "status-line");
+    var pill = el("span", "status-pill");
+    pill.appendChild(el("span", "dot"));
+    pill.appendChild(el("span", null, txt(D.meta.statusBadge)));
+    line.appendChild(pill);
+    line.appendChild(el("span", "chip", "最近更新：" + txt(D.meta.lastUpdated)));
+    left.appendChild(line);
+
+    var act = el("div", "actions");
+    (D.meta.heroActions || []).forEach(function (a) { act.appendChild(btn(a.url, a.label, a.kind)); });
+    left.appendChild(act);
+    g.appendChild(left);
+
+    var right = el("aside", "card");
+    right.appendChild(el("p", "eyebrow", "MY BUILD REPO"));
+    var repoName = (D.author && D.author.repoName) || TODO;
+    var h3 = el("h3", null, repoName);
+    h3.style.fontSize = "22px";
+    h3.style.margin = "8px 0 6px";
+    right.appendChild(h3);
+    right.appendChild(el("p", null, "Microduck 的精简版（lite）复刻仓库。"));
+    var rr = el("div", "status-line");
+    rr.appendChild(badge((D.author && D.author.repoStatus) || TODO));
+    right.appendChild(rr);
+    if (D.author && has(D.author.repo)) {
+      var ra = el("div", "actions");
+      ra.appendChild(btn(D.author.repo, "打开我的复刻仓库", "primary"));
+      if (has(D.author.github)) ra.appendChild(btn(D.author.github, "我的 GitHub 主页", "ghost"));
+      right.appendChild(ra);
+    } else {
+      right.appendChild(el("p", "muted small", "仓库地址待补充。"));
+    }
+
+    var hr = el("div");
+    hr.style.cssText = "border-top:1px solid var(--line);margin:20px 0 16px";
+    right.appendChild(hr);
+    right.appendChild(el("p", "eyebrow", "OFFICIAL ENTRANCES"));
+    var ul = el("ul", "list-plain");
+    (D.links && D.links.official || []).forEach(function (l) {
+      var li = el("li");
+      li.appendChild(extLink(l.url, l.label));
+      if (l.note) li.appendChild(el("span", "muted small", " · " + l.note));
+      ul.appendChild(li);
+    });
+    right.appendChild(ul);
+    right.appendChild(el("p", "muted small", "官方资料与我的仓库是两回事：上面一排是原版项目，不是我的产出。"));
+
+    g.appendChild(right);
+    m.appendChild(g);
+  }
+
+  function renderGoals() {
+    var m = mount("mount-goals");
+    if (!m) return;
+    clear(m);
+    if (D.goals && D.goals.length) {
+      var g = el("div", "grid grid-3");
+      D.goals.forEach(function (x) {
+        var c = el("div", "card");
+        c.appendChild(el("p", "card-num", "GOAL " + txt(x.num)));
+        c.appendChild(el("h3", null, txt(x.title)));
+        c.appendChild(el("p", null, txt(x.text)));
+        g.appendChild(c);
+      });
+      m.appendChild(g);
+      m.appendChild(el("p", "rail-hint", "以上是项目目标，不代表当前进度。"));
+    }
+  }
+
+  /* -------------------------------------------------------------- 进度区块 */
+  function renderProgress(where, full) {
+    var m = mount(where);
+    if (!m || !D.progress) return;
+    clear(m);
+    var P = D.progress, stages = P.stages || [], pct = progressPct(stages);
+    var done = stages.filter(function (s) { return s.status === "已完成"; }).length;
+    var wip = stages.filter(function (s) { return s.status === "进行中"; }).length;
+
+    head(m, "BUILD PROGRESS · 现在做到哪了", full ? txt(P.headline) : null, txt(P.sub));
+
+    var top = el("div", "grid grid-2");
+    top.style.alignItems = "start";
+
+    var left = el("div", "card");
+    var sum = el("div");
+    sum.style.cssText = "display:flex;gap:22px;align-items:center;flex-wrap:wrap";
+    var gwrap = el("div");
+    gwrap.innerHTML = gaugeSVG(pct);
+    sum.appendChild(gwrap);
+    var sinfo = el("div");
+    sinfo.style.flex = "1 1 220px";
+    var cur;
+    if (typeof pct === "number") cur = el("p", null, "已完成 " + done + " / " + stages.length + " 个阶段");
+    else if (wip) cur = el("p", null, "阶段完成度：" + TODO + "（进行中 " + wip + " 项）");
+    else cur = el("p", null, "阶段完成度：" + TODO);
+    cur.style.cssText = "font-size:19px;font-weight:800;margin:0 0 6px";
+    sinfo.appendChild(cur);
+    sinfo.appendChild(el("p", "muted small", "当前阶段：" + txt(P.currentStage) + " · 共 " + txt(P.totalStages) + " 个阶段"));
+    sinfo.appendChild(el("p", "muted small", "官方具名行为的个人通过数：" + txt(P.policiesPassed) + "（官方公布 6 项具名行为，详见软件实测页）"));
+    sum.appendChild(sinfo);
+    left.appendChild(sum);
+
+    var meter = el("div", "meter");
+    var bar = el("div", "bar");
+    var fill = el("div", "bar-fill" + (typeof pct === "number" ? "" : " empty"));
+    fill.style.width = (typeof pct === "number" ? pct : 100) + "%";
+    bar.appendChild(fill); meter.appendChild(bar);
+    var leg = el("div", "meter-legend");
+    leg.appendChild(el("span", null, typeof pct === "number" ? ("完成度 " + pct + "%") : ("完成度：" + TODO)));
+    leg.appendChild(el("span", null, "计入规则：只有状态为「已完成」的阶段才计入"));
+    meter.appendChild(leg);
+    left.appendChild(meter);
+
+    var sb = el("div", "stagebar");
+    sb.style.marginTop = "18px";
+    sb.innerHTML = stageBarSVG(stages);
+    left.appendChild(sb);
+    left.appendChild(el("p", "rail-hint", "灰块 = 待补充 / 未开始，蓝块 = 进行中，绿块 = 已完成。"));
+    if (has(P.stageNote)) {
+      var sn = el("p", "rail-hint", txt(P.stageNote));
+      left.appendChild(sn);
+    }
+    top.appendChild(left);
+
+    var right = el("div", "card");
+    right.appendChild(el("p", "eyebrow", "STAGE TIMELINE"));
+    right.appendChild(el("h3", null, "阶段时间线"));
+    var ol = el("ol", "timeline");
+    stages.forEach(function (s) {
+      var li = el("li", "timeline-item tl-item" + (s.status === "已完成" ? " is-ok" : (s.status === "进行中" ? " is-wip" : "")));
+      li.appendChild(el("span", "tl-dot", String(s.id || "")));
+      var h = el("div", "tl-head");
+      h.appendChild(el("h3", null, txt(s.name)));
+      h.appendChild(badge(s.status));
+      li.appendChild(h);
+      li.appendChild(el("p", "tl-note", txt(s.note)));
+      li.appendChild(el("span", "tl-date", "日期：" + txt(s.date)));
+      ol.appendChild(li);
+    });
+    right.appendChild(ol);
+    top.appendChild(right);
+
+    m.appendChild(top);
+
+    var blockers = P.blockers || [];
+    if (blockers.length) {
+      var bk = el("div", "card blockers");
+      bk.appendChild(el("p", "eyebrow", "REAL BLOCKERS · 真实卡点"));
+      bk.appendChild(el("h3", null, "卡在哪里，就写哪里"));
+      var bul = el("ul", "list-plain");
+      blockers.forEach(function (b) {
+        var li = el("li");
+        li.appendChild(el("strong", null, txt(b.title) + "："));
+        li.appendChild(document.createTextNode(txt(b.text)));
+        bul.appendChild(li);
+      });
+      bk.appendChild(bul);
+      m.appendChild(bk);
+    }
+
+    if (!full) {
+      var a = el("div", "actions");
+      a.style.marginTop = "18px";
+      a.appendChild(btn("#进度", "跳到完整进度与官方资料速览", "primary"));
+      m.appendChild(a);
+    }
+  }
+
+  /* ---------------------------------------------------------------- 实拍图 */
+  function renderPhotos() {
+    var m = mount("mount-photos");
+    if (!m || !D.duckPhotos) return;
+    clear(m);
+    head(m, "MEET OUR DUCK · 实拍图区", txt(D.duckPhotos.headline), txt(D.duckPhotos.sub));
+    var g = el("div", "grid grid-4");
+    (D.duckPhotos.photos || []).forEach(function (p) {
+      var c = el("figure", "photo-card");
+      c.style.margin = "0";
+      if (has(p.src)) {
+        var img = el("img");
+        img.src = p.src;
+        img.alt = txt(p.label) + " 实拍图";
+        img.loading = "lazy";
+        c.appendChild(img);
+      } else {
+        var ph = el("div", "ph");
+        var inner = el("div");
+        inner.appendChild(el("strong", null, txt(p.caption)));
+        inner.appendChild(el("div", null, "放这里 → " ));
+        inner.appendChild(el("code", null, txt(p.fileHint)));
+        ph.appendChild(inner);
+        c.appendChild(ph);
+      }
+      var meta = el("figcaption", "photo-meta");
+      meta.appendChild(el("strong", null, txt(p.label)));
+      meta.appendChild(el("span", "hint", has(p.src) ? p.src : "文件路径：" + txt(p.fileHint)));
+      c.appendChild(meta);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+    var hint = el("div", "notice");
+    hint.style.marginTop = "18px";
+    hint.appendChild(el("strong", null, "怎么放照片："));
+    hint.appendChild(el("span", null, txt(D.duckPhotos.sizeHint) + " 然后把本文件内嵌的数据块（window.SITE_DATA.duckPhotos）里对应条目的 src 填成图片路径或网址。"));
+    m.appendChild(hint);
+    m.appendChild(el("p", "rail-hint", "左右滑动可查看全部占位卡片（手机上）。"));
+  }
+
+  /* ------------------------------------------------------------ 配件与花费 */
+  function renderSpend() {
+    var m = mount("mount-spend");
+    if (!m || !D.spend) return;
+    clear(m);
+    var S = D.spend;
+    var g = el("div", "grid grid-3");
+    [["总预算", S.totalBudget], ["已花费", S.spent], ["待花费", S.remaining]].forEach(function (kv) {
+      var c = el("div", "stat");
+      c.appendChild(el("div", "k", kv[0]));
+      var v = el("div", "v " + (isTodo(kv[1]) ? "" : "mono"), isTodo(kv[1]) ? TODO : (S.currency + kv[1]));
+      if (isTodo(kv[1])) v.style.color = "var(--muted)";
+      c.appendChild(v);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+    m.appendChild(el("p", "rail-hint", txt(S.note)));
+  }
+
+  function partCardFor(group) {
+    var c = el("div", "card parts-group");
+    var hd = el("header");
+    hd.appendChild(el("span", "card-num", txt(group.num)));
+    hd.appendChild(el("h3", null, txt(group.group)));
+    c.appendChild(hd);
+    (group.items || []).forEach(function (it) {
+      var w = el("div", "part-item");
+      var r1 = el("div", "part-row1");
+      r1.appendChild(el("span", "part-model", txt(it.model)));
+      r1.appendChild(el("span", "part-price", isTodo(it.price) ? ("单价：" + TODO) : it.price));
+      w.appendChild(r1);
+      w.appendChild(el("p", "part-spec", txt(it.spec)));
+      var r3 = el("div", "part-row3");
+      r3.appendChild(variantBadge(it.variant));
+      r3.appendChild(badge(it.status));
+      if (has(it.src)) r3.appendChild(el("span", "src-chip", "来源：" + it.src));
+      w.appendChild(r3);
+      if (has(it.mine)) w.appendChild(el("p", "part-note", "我的选择：" + it.mine));
+      if (has(it.note)) w.appendChild(el("p", "part-note", "为什么： " + it.note));
+      c.appendChild(w);
+    });
+    return c;
+  }
+
+  function renderParts() {
+    var m = mount("mount-parts");
+    if (!m || !D.parts) return;
+    clear(m);
+    var rail = el("div", "rail");
+    D.parts.forEach(function (g) { rail.appendChild(partCardFor(g)); });
+    m.appendChild(rail);
+    m.appendChild(el("p", "rail-hint", "手机上可左右滑动查看 6 个分组。"));
+
+    var devs = collectDeviations();
+    if (devs.length) {
+      var dv = el("div", "deviate");
+      dv.style.marginTop = "18px";
+      dv.appendChild(el("h3", null, "偏离原版路线的项目：" + devs.length + " 项"));
+      devs.forEach(function (d) {
+        var it = el("div", "item");
+        it.appendChild(el("strong", null, d.model + (has(d.mine) ? "（" + d.mine + "）" : "")));
+        it.appendChild(document.createTextNode(" —— 属于「" + d.group + "」。"));
+        if (has(d.note)) it.appendChild(document.createTextNode("原因：" + d.note));
+        dv.appendChild(it);
+      });
+      dv.appendChild(el("p", "rail-hint", "注意：这里只标出「与原版路线不一致」的项，不代表已经验证通过或已经到货。"));
+      m.appendChild(dv);
+    }
+
+    if (D.variantLegend && D.variantLegend.length) {
+      var vl = el("div", "notice");
+      vl.style.marginTop = "18px";
+      vl.appendChild(el("strong", null, "类别标签说明："));
+      var vg = el("div", "chips");
+      vg.style.marginTop = "10px";
+      D.variantLegend.forEach(function (l) {
+        var c = el("span", "chip");
+        c.appendChild(variantBadge(l.label));
+        c.appendChild(el("span", null, " " + l.desc));
+        vg.appendChild(c);
+      });
+      vl.appendChild(vg);
+      m.appendChild(vl);
+    }
+
+    if (D.partsLegend && D.partsLegend.length) {
+      var n = el("div", "notice");
+      n.style.marginTop = "18px";
+      n.appendChild(el("strong", null, "来源标注说明："));
+      var ul = el("ul", "list-plain");
+      D.partsLegend.forEach(function (l) {
+        var li = el("li");
+        li.appendChild(el("strong", null, l.label + "："));
+        li.appendChild(document.createTextNode(l.desc));
+        ul.appendChild(li);
+      });
+      n.appendChild(ul);
+      m.appendChild(n);
+    }
+  }
+
+  function renderPartsTable() {
+    var m = mount("mount-parts-table");
+    if (!m || !D.parts) return;
+    clear(m);
+    var wrap = el("div", "table-wrap");
+    var t = el("table");
+    var thead = el("thead");
+    var tr = el("tr");
+    [["分组", ""], ["原版路线（型号 + 规格 + 来源）", ""], ["我的选择", ""], ["类别", ""], ["单价", "num"], ["小计", "num"], ["状态", ""]].forEach(function (h) {
+      var th = el("th", h[1] || null, h[0]);
+      tr.appendChild(th);
+    });
+    thead.appendChild(tr); t.appendChild(thead);
+    var tb = el("tbody");
+    D.parts.forEach(function (g) {
+      (g.items || []).forEach(function (it) {
+        var r = el("tr");
+        var c1 = el("td");
+        c1.appendChild(el("span", "card-num", txt(g.num)));
+        c1.appendChild(el("div", "small", txt(g.group)));
+        r.appendChild(c1);
+        var c2 = el("td");
+        c2.appendChild(el("strong", null, txt(it.model)));
+        c2.appendChild(el("div", "small muted", txt(it.spec)));
+        if (has(it.src)) c2.appendChild(el("span", "src-chip", "来源：" + it.src));
+        r.appendChild(c2);
+        var c3 = el("td");
+        if (has(it.mine)) c3.appendChild(el("strong", null, it.mine));
+        else c3.appendChild(el("span", "muted", TODO));
+        if (has(it.note)) c3.appendChild(el("div", "part-note", it.note));
+        r.appendChild(c3);
+        var c4 = el("td");
+        c4.appendChild(variantBadge(it.variant));
+        r.appendChild(c4);
+        r.appendChild(el("td", "num", isTodo(it.price) ? TODO : it.price));
+        r.appendChild(el("td", "num", TODO));
+        var c6 = el("td");
+        c6.appendChild(badge(it.status));
+        r.appendChild(c6);
+        tb.appendChild(r);
+      });
+    });
+    t.appendChild(tb); wrap.appendChild(t); m.appendChild(wrap);
+    m.appendChild(el("p", "rail-hint", "「我的选择」列填你实际选的型号（例如飞特 1910，类别标「国产替代」）；单价的购买凭证还没整理，所以「单价 / 小计」仍是「待补充」，到货状态也只写到「未到货」这一档。"));
+  }
+
+  function renderPurchases() {
+    var m = mount("mount-purchases");
+    if (!m || !D.purchases) return;
+    clear(m);
+    var wrap = el("div", "table-wrap");
+    var t = el("table");
+    var tr = el("tr");
+    ["编号", "采购项", "状态", "下单日期", "金额", "备注"].forEach(function (h) { tr.appendChild(el("th", null, h)); });
+    var thead = el("thead"); thead.appendChild(tr); t.appendChild(thead);
+    var tb = el("tbody");
+    D.purchases.forEach(function (p) {
+      var r = el("tr");
+      r.appendChild(el("td", "num", txt(p.id)));
+      r.appendChild(el("td", null, txt(p.item)));
+      var cs = el("td"); cs.appendChild(badge(p.status)); r.appendChild(cs);
+      r.appendChild(el("td", "num", txt(p.dateOrdered)));
+      r.appendChild(el("td", "num", isTodo(p.amount) ? TODO : p.amount));
+      r.appendChild(el("td", "muted small", txt(p.note)));
+      tb.appendChild(r);
+    });
+    t.appendChild(tb); wrap.appendChild(t); m.appendChild(wrap);
+  }
+
+  function renderDomestic() {
+    var m = mount("mount-domestic");
+    if (!m || !D.domestic) return;
+    clear(m);
+    var G = D.domestic;
+    head(m, "DOMESTIC ALTERNATIVE · 设想阶段", txt(G.headline), null);
+    var bar = el("div", "actions");
+    bar.style.marginBottom = "20px";
+    var b1 = el("span", "badge b-plan", txt(G.badge));
+    bar.appendChild(b1);
+    bar.appendChild(el("span", "badge b-todo", "预算：" + txt(G.budget)));
+    m.appendChild(bar);
+    var n = el("div", "notice");
+    n.style.marginBottom = "20px";
+    n.appendChild(el("strong", null, "这块不是已完成的清单："));
+    n.appendChild(document.createTextNode(txt(G.note)));
+    m.appendChild(n);
+    var rail = el("div", "rail");
+    (G.groups || []).forEach(function (g) {
+      var c = el("div", "card parts-group");
+      var hd = el("header");
+      hd.appendChild(el("span", "card-num", txt(g.num)));
+      hd.appendChild(el("h3", null, txt(g.group)));
+      c.appendChild(hd);
+      (g.items || []).forEach(function (it) {
+        var w = el("div", "part-item");
+        var r1 = el("div", "part-row1");
+        r1.appendChild(el("span", "part-model", txt(it.model)));
+        w.appendChild(r1);
+        w.appendChild(el("p", "part-spec", txt(it.spec)));
+        var r3 = el("div", "part-row3");
+        r3.appendChild(badge(it.status));
+        w.appendChild(r3);
+        c.appendChild(w);
+      });
+      rail.appendChild(c);
+    });
+    m.appendChild(rail);
+    m.appendChild(el("p", "rail-hint", "左右滑动查看全部设想分组。以上全部为未验证设想，采购与验证结果都会另外单独记录。"));
+  }
+
+  /* --------------------------------------------------------------- ducklink */
+  function renderDucklink() {
+    var m = mount("mount-ducklink");
+    if (!m || !D.ducklink) return;
+    clear(m);
+    var L = D.ducklink;
+    head(m, txt(L.eyebrow), txt(L.headline), txt(L.sub));
+    var bar = el("div", "status-line");
+    bar.appendChild(badge(L.status));
+    (L.platforms || []).forEach(function (p) { bar.appendChild(el("span", "chip", p)); });
+    if (has(L.repo)) {
+      bar.appendChild(btn(L.repo, L.repoLabel || "代码仓库"));
+    } else {
+      bar.appendChild(el("span", "badge b-todo", (L.repoLabel || "代码仓库") + "：待补充"));
+    }
+    m.appendChild(bar);
+    var g = el("div", "grid grid-2");
+    (L.features || []).forEach(function (f, i) {
+      var c = el("div", "card");
+      c.appendChild(el("p", "card-num", "FEATURE " + String(i + 1).padStart(2, "0")));
+      c.appendChild(el("h3", null, txt(f.title)));
+      c.appendChild(el("p", null, txt(f.desc)));
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+    var n = el("div", "notice");
+    n.style.marginTop = "18px";
+    n.appendChild(el("strong", null, "状态说明："));
+    n.appendChild(document.createTextNode(txt(L.note)));
+    m.appendChild(n);
+  }
+
+  /* -------------------------------------------------------------- 软件实测 */
+  function renderSoftware() {
+    var m = mount("mount-software");
+    if (!m || !D.software) return;
+    clear(m);
+    var S = D.software;
+    head(m, txt(S.eyebrow), txt(S.headline), txt(S.sub));
+    m.appendChild(el("p", "rail-hint", txt(S.board)));
+    var g = el("div", "grid grid-2");
+    g.style.marginTop = "18px";
+    (S.blocks || []).forEach(function (b) {
+      var c = el("div", "card");
+      var hd = el("div", "tl-head");
+      hd.appendChild(el("span", "card-num", "DIRECTION " + txt(b.num)));
+      hd.appendChild(badge(b.badge));
+      c.appendChild(hd);
+      c.appendChild(el("h3", null, txt(b.title)));
+      var d1 = el("p", null, "");
+      d1.appendChild(el("strong", null, "要测什么："));
+      d1.appendChild(document.createTextNode(txt(b.what)));
+      c.appendChild(d1);
+      var d2 = el("p", null, "");
+      d2.appendChild(el("strong", null, "怎么验证："));
+      d2.appendChild(document.createTextNode(txt(b.how)));
+      c.appendChild(d2);
+      var h4 = el("p", "eyebrow", "当前记录");
+      h4.style.margin = "16px 0 6px";
+      c.appendChild(h4);
+      var ul = el("ul", "list-plain");
+      (b.record || []).forEach(function (r) {
+        var li = el("li", null, txt(r));
+        ul.appendChild(li);
+      });
+      c.appendChild(ul);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+  }
+
+  /* ------------------------------------------------------------ 公开资料 */
+  function renderDownloads() {
+    var m = mount("mount-downloads");
+    if (!m || !D.downloads) return;
+    clear(m);
+    var X = D.downloads;
+    head(m, txt(X.eyebrow), txt(X.headline), txt(X.sub));
+    var g = el("div", "grid grid-2");
+    (X.items || []).forEach(function (it) {
+      var c = el("div", "card");
+      var h = el("h3", null, "");
+      h.appendChild(extLink(it.url, txt(it.name)));
+      c.appendChild(h);
+      c.appendChild(el("p", null, txt(it.what)));
+      var r = el("div", "part-row3");
+      r.style.marginTop = "12px";
+      r.appendChild(el("span", "src-chip", txt(it.note)));
+      c.appendChild(r);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+    if (X.gaps && X.gaps.length) {
+      var n = el("div", "notice");
+      n.style.marginTop = "20px";
+      n.appendChild(el("strong", null, "已知缺口（官方没公开的部分）："));
+      var ul = el("ul", "list-plain");
+      X.gaps.forEach(function (x) { ul.appendChild(el("li", null, x)); });
+      n.appendChild(ul);
+      m.appendChild(n);
+    }
+  }
+
+  /* -------------------------------------------------------- 官方规格速览 */
+  function renderOfficialFacts() {
+    var m = mount("mount-official-facts");
+    if (!m || !D.officialFacts) return;
+    clear(m);
+    var F = D.officialFacts;
+    head(m, "OFFICIAL FACTS · 公开资料速览", txt(F.headline), txt(F.sub));
+    var kv = el("div", "kv");
+    (F.rows || []).forEach(function (r) {
+      var row = el("div", "kv-row");
+      row.appendChild(el("div", "k", txt(r.k)));
+      row.appendChild(el("div", "v", txt(r.v)));
+      var s = el("div", "s");
+      var t = String(r.src || "");
+      s.appendChild(el("span", "src-chip " + (/待核实/.test(t) ? "b-todo" : ""), "来源：" + txt(r.src)));
+      row.appendChild(s);
+      kv.appendChild(row);
+    });
+    m.appendChild(kv);
+  }
+
+  /* ------------------------------------------------------------ 许可与身份 */
+  function renderLicense() {
+    var m = mount("mount-license");
+    if (!m || !D.license) return;
+    clear(m);
+    var L = D.license;
+    head(m, "LICENSE & BOUNDARY · 公开沟通与许可边界", txt(L.headline), txt(L.sub));
+    var g = el("div", "grid grid-3");
+    (L.items || []).forEach(function (it) {
+      var c = el("div", "card");
+      c.appendChild(el("h3", null, txt(it.title)));
+      c.appendChild(el("p", null, txt(it.text)));
+      var s = el("div", "part-row3");
+      s.style.marginTop = "12px";
+      var a = extLink(it.src, "来源链接");
+      a.className = "small";
+      s.appendChild(a);
+      c.appendChild(s);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+    var st = el("div", "license-statement");
+    st.appendChild(el("div", null, txt(L.statement)));
+    st.appendChild(el("div", "small muted", txt(L.statementExtra)));
+    m.appendChild(st);
+  }
+
+  /* ---------------------------------------------------------------- 入口区 */
+  function renderLinks() {
+    var m = mount("mount-links");
+    if (!m || !D.links) return;
+    clear(m);
+    var cols = [["我的入口", D.links.mine], ["官方资料", D.links.official], ["社区二创", D.links.community]];
+    var g = el("div", "grid grid-3");
+    cols.forEach(function (pair) {
+      var c = el("div", "card");
+      c.appendChild(el("p", "eyebrow", pair[0]));
+      var ul = el("ul", "list-plain");
+      (pair[1] || []).forEach(function (l) {
+        var li = el("li");
+        li.appendChild(extLink(l.url, l.label));
+        if (has(l.note)) li.appendChild(el("span", "muted small", " · " + l.note));
+        ul.appendChild(li);
+      });
+      c.appendChild(ul);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+  }
+
+  /* ------------------------------------------------------------------ 作者 */
+  function renderAuthor() {
+    var m = mount("mount-author");
+    if (!m || !D.author) return;
+    clear(m);
+    var A = D.author;
+    head(m, "ABOUT THE AUTHOR · 关于作者", "Joe刘", txt(A.bio));
+    var g = el("div", "grid grid-2");
+    var c1 = el("div", "card");
+    c1.appendChild(el("p", "eyebrow", "AUTHOR"));
+    var h = el("h3", null, txt(A.name));
+    h.style.fontSize = "22px";
+    c1.appendChild(h);
+    c1.appendChild(el("p", null, txt(A.bio)));
+    var chips = el("div", "chips");
+    chips.style.margin = "14px 0";
+    (A.techFocus || []).forEach(function (t) { chips.appendChild(el("span", "chip", t)); });
+    c1.appendChild(chips);
+    var kv1 = el("div", "small");
+    kv1.appendChild(el("div", null, "所在地：" + txt(A.location)));
+    kv1.appendChild(el("div", null, "联系方式：" + txt(A.contact)));
+    c1.appendChild(kv1);
+    var a1 = el("div", "actions");
+    a1.style.marginTop = "16px";
+    if (has(A.repo)) a1.appendChild(btn(A.repo, "我的复刻仓库", "primary"));
+    if (has(A.github)) a1.appendChild(btn(A.github, "我的 GitHub 主页", "ghost"));
+    c1.appendChild(a1);
+    c1.appendChild(el("p", "rail-hint", "上面两个链接是两回事：一个是我的仓库，一个是原版项目（在页面下方的「官方资料」里）。"));
+    g.appendChild(c1);
+
+    var c2 = el("div", "card");
+    c2.appendChild(el("p", "eyebrow", "MY REPO"));
+    var h2 = el("h3", null, txt(A.repoName));
+    h2.style.fontSize = "22px";
+    c2.appendChild(h2);
+    var rr = el("div", "status-line");
+    rr.appendChild(badge(A.repoStatus));
+    c2.appendChild(rr);
+    c2.appendChild(el("p", null, "Microduck 的精简版（lite）复刻。"));
+    c2.appendChild(el("p", "muted small", "当前状态：" + txt(A.repoStatus) + "。这里没有代码或文档可看，等推送之后再改本文件内嵌数据块里的说明。"));
+    if (has(A.repo)) {
+      var a2 = el("div", "actions");
+      a2.style.marginTop = "12px";
+      a2.appendChild(btn(A.repo, "打开仓库", "primary"));
+      c2.appendChild(a2);
+    }
+    g.appendChild(c2);
+    m.appendChild(g);
+
+    var pj = mount("mount-projects");
+    if (pj) {
+      clear(pj);
+      pj.appendChild(el("p", "eyebrow", "MY PROJECTS · 我的项目"));
+      pj.appendChild(el("h3", "sec-title", "我的项目卡片"));
+      pj.style.marginTop = "28px";
+      var pg = el("div", "grid grid-3");
+      (A.projects || []).forEach(function (p) {
+        var c = el("div", "card");
+        c.appendChild(el("h3", null, txt(p.name)));
+        c.appendChild(el("p", null, txt(p.desc)));
+        var r = el("div", "part-row3");
+        r.style.margin = "12px 0 0";
+        r.appendChild(badge(p.status));
+        r.appendChild(el("span", "src-chip", "语言：" + txt(p.lang)));
+        c.appendChild(r);
+        c.appendChild(el("p", "muted small", "最近更新：" + txt(p.updated)));
+        var a = el("div", "actions");
+        a.style.marginTop = "12px";
+        a.appendChild(btn(p.url, "在 GitHub 查看", "ghost"));
+        c.appendChild(a);
+        pg.appendChild(c);
+      });
+      pj.appendChild(pg);
+      pj.appendChild(el("p", "rail-hint", txt(A.projectsNote)));
+    }
+  }
+
+  /* -------------------------------------------------------------- 页脚区块 */
+  function renderFooter() {
+    var m = mount("mount-footer");
+    if (!m) return;
+    clear(m);
+    var g = el("div", "footer-grid");
+    var c1 = el("div");
+    c1.appendChild(el("h4", null, "关于本站"));
+    c1.appendChild(el("p", "small muted", txt(D.meta && D.meta.siteName)));
+    c1.appendChild(el("p", "small muted", txt(D.meta && D.meta.disclaimer)));
+    c1.appendChild(el("p", "small muted", "最近更新：" + txt(D.meta && D.meta.lastUpdated)));
+    g.appendChild(c1);
+
+    [["我的入口", D.links && D.links.mine], ["官方资料", D.links && D.links.official], ["社区二创", D.links && D.links.community]].forEach(function (pair) {
+      var c = el("div");
+      c.appendChild(el("h4", null, pair[0]));
+      var ul = el("ul");
+      (pair[1] || []).forEach(function (l) {
+        var li = el("li");
+        li.appendChild(extLink(l.url, l.label));
+        ul.appendChild(li);
+      });
+      c.appendChild(ul);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+
+    var note = el("div", "note");
+    note.appendChild(el("strong", null, "资料出处："));
+    (D.sources || []).forEach(function (s, i) {
+      if (i) note.appendChild(document.createTextNode("、"));
+      note.appendChild(extLink(s.url, s.label));
+    });
+    m.appendChild(note);
+  }
+
+  /* ------------------------------------------------------------------ 启动 */
+  function boot() {
+    if (!D) {
+      var m = mount("mount-notice");
+      if (m) {
+        var box = el("div", "notice");
+        box.appendChild(el("strong", null, "数据文件没加载成功："));
+        box.appendChild(el("span", null, "请确认本文件内嵌的数据块（window.SITE_DATA）完整、没有被浏览器或编辑器破坏。"));
+        m.appendChild(box);
+      }
+      return;
+    }
+    renderNav();
+    renderNotice();
+    renderHero();
+    renderGoals();
+    renderProgress("mount-progress-summary", false);
+    renderProgress("mount-progress-full", true);
+    renderPhotos();
+    renderSpend();
+    renderParts();
+    renderPartsTable();
+    renderPurchases();
+    renderDomestic();
+    renderDucklink();
+    renderSoftware();
+    renderDownloads();
+    renderOfficialFacts();
+    renderAuthor();
+    renderLicense();
+    renderLinks();
+    renderFooter();
+    if (window.console && console.info) {
+      console.info("[Microduck 站] 内嵌数据块已加载，数据块：" + Object.keys(D).join(", "));
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+<script>
+/* ============================================================================
+ * 单文件版补充脚本：导航高亮（滚动到哪个区块，就把哪个导航项点亮）
+ * 原站用 data-page 判断当前页；合并成一页后改成跟随滚动位置。
+ * 不支持 IntersectionObserver 的浏览器直接跳过，不影响其它功能。
+ * ========================================================================== */
+/* --- 导航高度同步：让锚点落点刚好在 sticky 导航下方 --- */
+(function () {
+  "use strict";
+  var nav = document.querySelector("header.nav");
+  if (!nav) return;
+  function sync() {
+    var h = Math.round(nav.getBoundingClientRect().height);
+    if (h > 0) document.documentElement.style.setProperty("--navh", h + "px");
+  }
+  sync();
+  window.addEventListener("resize", sync);
+  window.addEventListener("orientationchange", sync);
+  window.addEventListener("load", sync);
+  if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+    document.fonts.ready.then(sync)["catch"](function () {});
+  }
+})();
+
+(function () {
+  "use strict";
+  if (!("IntersectionObserver" in window)) return;
+
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a[href^="#"]'));
+  if (!links.length) return;
+
+  var targets = [], pairs = [];
+  links.forEach(function (a) {
+    var id = a.getAttribute("href").slice(1);
+    var node = document.getElementById(id);
+    if (node) { targets.push(node); pairs.push({ a: a, node: node }); }
+  });
+  if (!pairs.length) return;
+
+  function setActive(node) {
+    pairs.forEach(function (p) {
+      if (p.node === node) { p.a.setAttribute("aria-current", "page"); }
+      else { p.a.removeAttribute("aria-current"); }
+    });
+  }
+
+  var ratios = [];
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      var i = targets.indexOf(e.target);
+      if (i >= 0) ratios[i] = e.isIntersecting ? e.intersectionRatio : 0;
+    });
+    var best = -1, bestRatio = 0;
+    for (var i = 0; i < targets.length; i++) {
+      var r = ratios[i] || 0;
+      if (r > bestRatio) { bestRatio = r; best = i; }
+    }
+    if (best >= 0) setActive(targets[best]);
+  }, { rootMargin: "-84px 0px -55% 0px", threshold: [0, 0.05, 0.2, 0.5, 1] });
+
+  targets.forEach(function (t) { obs.observe(t); });
+
+  pairs.forEach(function (p) {
+    p.a.addEventListener("click", function () { setActive(p.node); });
+  });
+})();
+</script>
+</body>
+</html>
