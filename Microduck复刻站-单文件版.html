@@ -371,10 +371,24 @@ td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; w
   .nav-links { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .nav-links::-webkit-scrollbar { display: none; }
   .nav-inner { gap: 8px; }
+  /* 导航增加到 6 项后，窄屏把链接的左右内边距收紧 2px，6 项正好排满一行不需横向滑动 */
+  .nav-links a { padding-left: 11px; padding-right: 11px; }
 }
+
+/* 新增「资料下载」导航项后：链接始终排成一行不换行；宽度不够时横向滑动 */
+.nav-links { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; max-width: 100%; }
+.nav-links::-webkit-scrollbar { display: none; }
+.nav-links a { white-space: nowrap; }
 
 /* 页内锚点跳转时给目标区块一个轻微的落点提示 */
 .section:target { box-shadow: inset 0 3px 0 0 var(--brand); }
+
+/* 「公开资料下载」区块：资料包卡片内的清单不换行溢出，长文件名 / 哈希允许断行 */
+.card .pkg-meta { font-size: 13px; color: var(--muted); margin: 4px 0 0; overflow-wrap: anywhere; }
+.card .pkg-list { margin: 10px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; }
+.card .pkg-list li { margin: 4px 0; }
+.card .pkg-hash { font-size: 12px; color: var(--muted); font-family: var(--mono); overflow-wrap: anywhere; margin: 8px 0 0; }
+.pkg-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
 /* 窄屏下表格容器允许横向滑动，且不撑破页面 */
 .table-wrap { max-width: 100%; -webkit-overflow-scrolling: touch; }
 </style>
@@ -393,6 +407,7 @@ td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; w
       <a href="#进度" data-nav="progress">复刻进度</a>
       <a href="#配件与花费" data-nav="parts">配件与花费</a>
       <a href="#软件实测" data-nav="software">软件实测</a>
+      <a href="#资料下载" data-nav="downloads">资料下载</a>
       <a href="#关于作者" data-nav="author">关于作者</a>
     </nav>
   </div>
@@ -487,6 +502,11 @@ td.num, th.num { font-family: var(--mono); font-variant-numeric: tabular-nums; w
       <div id="mount-ducklink"></div>
       <div id="mount-software" style="margin-top:44px"></div>
     </div>
+  </section>
+
+  <!-- ============ 公开资料下载（4 个制作资料包 · 原始渠道托管） ============ -->
+  <section class="section" id="资料下载">
+    <div class="wrap" id="mount-public-downloads"></div>
   </section>
 
   <!-- ======================= 公开资料直接下载 ======================= -->
@@ -965,6 +985,116 @@ window.SITE_DATA = {
       "官方没有发布一站式 BOM 与逐步组装说明：「搭建开发板」流程与电子设计在官方仓库里，机械件需要自己从公开资源整理或导出；中文装机教程与第三方整理页给出的清单都是重建 / 推断版，采购前必须自行核对。",
       "imu_to_dxl v2 这块 IMU 转总线小板据沟通记录未开源、也无单独售卖，兼容板只能自行研究。",
       "相机分辨率与视场、ToF 量程、无线版本与 SDK 语言，官方 press kit 标注为仍在最终确认中，属暂定值。"
+    ]
+  },
+
+  /* ------------- 第九部分：公开资料下载（4 个制作资料包 · 原始渠道托管） --------- */
+  // 这四个包托管在原始公开渠道（参考项目 Fanduck 的下载区），本站只做索引，
+  // 不复制、不镜像、不重新打包；verify 里的字节数与 SHA-256 按官方版本清单逐项核对。
+  publicDownloads: {
+    eyebrow: "PUBLIC DOWNLOADS · 4 个制作资料包 · 2026-09-16",
+    headline: "制作资料包下载（本站只做索引）",
+    sub: "下面 4 个包是参考项目 Fanduck 在 2026-09-16 公开的 Microduck 制作资料。文件托管在原始公开渠道，本站不转发、不镜像，只做索引，点击即跳转原文下载。四个包的大小、字节数与 SHA-256 都已按官方版本清单逐项核对，实测结果见下面的核验表。再往下的「公开资料」区块给的是原版与社区的入口链接。",
+    license: "这批资料来自公开渠道（参考项目 Fanduck / 原版 Microduck 公开资料），本站仅作转载索引，权利归原作者，下载前请自行确认使用与再分发条件。",
+    items: [
+      {
+        title: "制作物料与打印文件",
+        filename: "fanduck-materials-print-20260916.zip",
+        size: "13.35 MB",
+        bytes: "13,352,354 字节",
+        unpacked: "63 个文件 / 15 个子目录 / 解压后约 35.36 MB",
+        entry: "Fanduck/01_物料清单.md、Fanduck/02_打印件",
+        what: "装机物料清单，以及按材料和颜色分好类的 3D 打印件。",
+        contents: [
+          "54 个 STL 打印件，按 10 类材料 / 颜色分目录：硬质 PLA+ 五色共 31 件、柔性 TPU95A 黄色 4 件、尼龙 PA12 1 件、测试架 6 件、滚轮组件 12 件；文件名直接标了实际打印数量（形如「第01件_共01件」）",
+          "1 张头部装配关系图（PNG，约 956 KB）",
+          "1 份中文物料清单 01_物料清单.md：装机件与附件、制作与检查工具、使用边界三张表",
+          "「只使用这个目录」说明、当前文件 SHA-256 校验表（CSV）",
+          "README.md、SOURCES.json、SHA256SUMS.txt、官方模型许可原文"
+        ],
+        sha: "70e787efeb98003dd7f29f2754bd194e978256330f13a57f1641bab69f173826",
+        url: "https://duck.fandcode.com/downloads/maker-20260916-r2/fanduck-materials-print-20260916.zip"
+      },
+      {
+        title: "板件制造资料",
+        filename: "fanduck-boards-20260916.zip",
+        size: "32.8 MB",
+        bytes: "32,801,825 字节",
+        unpacked: "94 个文件 / 21 个子目录 / 解压后约 38.42 MB（四个包里最大）",
+        entry: "Fanduck/03_板件",
+        what: "四套板件的 KiCad 源文件、可打样制造文件与接口总览图。",
+        contents: [
+          "4 套板件资料：官方 Robot HAT C1（35 个文件）、NFC 头部刚板 v0.4 ＋ 鸭嘴天线 FPC v0.9（23 个文件）、电池触点板 v0.3（28 个文件，含机械 STEP 与几何检查脚本）",
+          "24 个 KiCad 源文件 / 库文件：9 个 .kicad_sch、4 个 .kicad_pcb、7 个 .kicad_mod、2 个 .kicad_pro 等；HAT 侧还带 7 张分立原理图",
+          "16 份 PDF：HAT 原理图与 PCB 图、BMI088 / TLV320AIC3104 / PAM8406 / AP63205 等器件手册、Raspberry Pi Zero 2 W 规格与简化原理图",
+          "电池触点板 v0.3 的 10 个 Gerber / 钻孔输出（8 层 Gerber ＋ 钻孔文件与 gbrjob），另附钻孔报告、打样参数、SHA256SUMS",
+          "5 个可直接送厂的压缩包：2 个 NFC GERBER、HAT PCB、HAT STEP、触点板裸板报价包",
+          "3 张接口与元器件总览图：触点板 v0.3、NFC 头部刚板 v0.4、NFC 鸭嘴天线 FPC v0.9",
+          "5 份 BOM / 坐标 CSV（含嘉立创 BOM 与 CPL）"
+        ],
+        sha: "bf3839965e3e7e47253047b1e9e36f51fdbacf432ed7342853d32f116e85b726",
+        url: "https://duck.fandcode.com/downloads/maker-20260916-r2/fanduck-boards-20260916.zip"
+      },
+      {
+        title: "制作工具源码",
+        filename: "fanduck-making-tools-20260916.zip",
+        size: "1.13 MB",
+        bytes: "1,181,370 字节",
+        unpacked: "25 个文件 / 18 个子目录 / 解压后约 2.71 MB",
+        entry: "Fanduck/04_制作工具",
+        what: "打印修正版的生成与几何检查脚本，以及它们需要的输入模型。",
+        contents: [
+          "4 个 Python 脚本：电池背板卡扣根部加强 v1 生成、轮胎配合修正版 v2 生成、网格读取与检查函数、FreeCAD 独立几何检查",
+          "4 个 STL 输入基线：轮胎、轮毂与 2 个原始毫米基线件",
+          "2 张轮胎配合修正剖面图（PNG ＋ SVG）、6 份 JSON 数字检查记录",
+          "README.md、SOURCES.json、SHA256SUMS.txt、官方模型许可原文"
+        ],
+        sha: "4ae87f7a12c59f95ca6b682286d973c680bceff31f9bcffb2950f11764e7bcf8",
+        url: "https://duck.fandcode.com/downloads/maker-20260916-r2/fanduck-making-tools-20260916.zip"
+      },
+      {
+        title: "镜像工作台源码",
+        filename: "fanduck-mirror-workbench-20260916.zip",
+        size: "2.68 MB",
+        bytes: "2,678,602 字节",
+        unpacked: "32 个文件 / 11 个子目录 / 解压后约 6.25 MB",
+        entry: "Fanduck/06_镜像工作台",
+        what: "本地查看鸭子 3D 关节姿态与只读状态的调试工具，可选相机画面；默认不连硬件、相机关闭。",
+        contents: [
+          "11 个 Python：本地服务、主控只读采集、U2D2 只读采集、相机管理，以及 4 个离线测试文件（共 34 项离线测试）",
+          "3 个前端 JS ＋ 1 个本地网页 index.html（浏览器端 3D 姿态显示）",
+          "4 个 Shell 脚本：严格主机指纹校验的设备发现、相机启停、启动器",
+          "2 个 systemd 服务单元、1 个 .bin 3D 模型资源（约 5.8 MB）、requirements.txt 与 mediad 媒体配置 toml",
+          "README.md（含环境变量表与安全边界）、核验结果.json、SOURCES.json、SHA256SUMS.txt、官方模型许可原文"
+        ],
+        sha: "43f67fc19b5f3478f5b6d38dac59c37924c5feb1ea03d7e9b4fb4c883707df22",
+        url: "https://duck.fandcode.com/downloads/maker-20260916-r2/fanduck-mirror-workbench-20260916.zip"
+      }
+    ],
+    verifyNote: "核验方法：2026-09-24 直接请求原始下载地址，比对 HTTP 状态码、Content-Length 与 SHA-256；四个包的哈希与 Fanduck 官方版本清单 manifest.json / SHA256SUMS.txt 完全一致。核验结果只代表这一次实测。",
+    verify: [
+      { title: "制作物料与打印文件", file: "fanduck-materials-print-20260916.zip", size: "13.35 MB", http: "200", bytes: "13,352,354 字节 · 一致", sha: "70e787efeb98003dd7f29f2754bd194e978256330f13a57f1641bab69f173826" },
+      { title: "板件制造资料", file: "fanduck-boards-20260916.zip", size: "32.8 MB", http: "200", bytes: "32,801,825 字节 · 一致", sha: "bf3839965e3e7e47253047b1e9e36f51fdbacf432ed7342853d32f116e85b726" },
+      { title: "制作工具源码", file: "fanduck-making-tools-20260916.zip", size: "1.13 MB", http: "200", bytes: "1,181,370 字节 · 一致", sha: "4ae87f7a12c59f95ca6b682286d973c680bceff31f9bcffb2950f11764e7bcf8" },
+      { title: "镜像工作台源码", file: "fanduck-mirror-workbench-20260916.zip", size: "2.68 MB", http: "200", bytes: "2,678,602 字节 · 一致", sha: "43f67fc19b5f3478f5b6d38dac59c37924c5feb1ea03d7e9b4fb4c883707df22" }
+    ],
+    upstream: {
+      title: "原始来源（资料包的上游出处）",
+      sub: "这 4 个包里的模型与官方板件文件，上游都在官方公开仓库；包内 README 逐项写明了提交号。",
+      items: [
+        { name: "官方 RL 训练仓库 pollen-robotics/microduck_rl", url: "https://github.com/pollen-robotics/microduck_rl", what: "打印件与仿真几何的上游来源（包内标注提交 d424a0c8）。模型及衍生件为 CC BY-SA-NC 非商业许可，代码为 Apache-2.0。", note: "2026-09-24 复核：仓库页可读" },
+        { name: "官方电路仓库 pollen-robotics/elec_RPI_Robot_HAT", url: "https://github.com/pollen-robotics/elec_RPI_Robot_HAT", what: "Robot HAT C1 的原始仓库（包内标注提交 23eab119），原 LICENSE 与第三方署名随板件包保留。", note: "2026-09-24 复核：仓库页可读" },
+        { name: "Fanduck 官网下载区（资料发布处）", url: "https://duck.fandcode.com/#downloads", what: "4 个包的发布页面，带版本清单与 SHA-256 校验文件。", note: "2026-09-24 复核：页面可读" },
+        { name: "版本清单 manifest.json", url: "https://duck.fandcode.com/downloads/maker-20260916-r2/manifest.json", what: "四个包的文件名、字节数、大小与 SHA-256 官方清单。", note: "2026-09-24 复核：HTTP 200" },
+        { name: "官方校验文件 SHA256SUMS.txt", url: "https://duck.fandcode.com/downloads/maker-20260916-r2/SHA256SUMS.txt", what: "四个包的官方 SHA-256，下载后可自行比对。", note: "2026-09-24 复核：HTTP 200" }
+      ]
+    },
+    gaps: [
+      "这 4 个包只含制作物料与制作 / 调试工具，不含官网、App 与产品运行时代码；官方仓库 pollen-robotics/microduck 目前仍未公开完整 BOM、逐步组装说明与 3D 打印文件包。",
+      "包内 README 写明：触点板、NFC 与制作工具属 Fanduck 项目的工程版本，不冒充官方原版；公开资料不等于完整开源硬件或商业生产授权。",
+      "包内安全边界原文：不得把 2S 电池直接给额定 3.7–6.0 V 的零售 XL330 供电；打印件不是原厂生产图纸，数字几何检查不替代实物配合验收；镜像工作台默认不连接硬件、相机关闭，离线测试不等于实机验收。",
+      "本站不镜像这些文件、也不对下载文件的完整性负责：下载后请用包内 SHA256SUMS.txt 或官方的 SHA256SUMS.txt 自行校验（上表核验结果只代表 2026-09-24 这一次实测）。",
+      "待补充：本次没有在站上做逐包目录树与文件类型统计，那部分放在站外的《资料下载清单》里维护。"
     ]
   },
 
@@ -1724,6 +1854,107 @@ window.SITE_DATA = {
     }
   }
 
+  /* ------------------------------------------------------ 公开资料下载 */
+  function renderPublicDownloads() {
+    var m = mount("mount-public-downloads");
+    if (!m || !D.publicDownloads) return;
+    clear(m);
+    var X = D.publicDownloads;
+    head(m, txt(X.eyebrow), txt(X.headline), txt(X.sub));
+
+    /* 来源与许可提示：放在最前面，避免被当成可以随便再分发 */
+    var lic = el("div", "notice");
+    lic.style.marginBottom = "24px";
+    lic.appendChild(el("strong", null, "来源与许可："));
+    lic.appendChild(el("span", null, txt(X.license)));
+    m.appendChild(lic);
+
+    var g = el("div", "grid grid-2");
+    (X.items || []).forEach(function (it) {
+      var c = el("div", "card");
+      c.appendChild(el("h3", null, txt(it.title)));
+      c.appendChild(el("p", "pkg-meta mono", "原始文件名：" + txt(it.filename)));
+      c.appendChild(el("p", "pkg-meta", "文件大小：" + txt(it.size) + "（" + txt(it.bytes) + "）· " + txt(it.unpacked)));
+      c.appendChild(el("p", "pkg-meta", "包内入口：" + txt(it.entry)));
+      c.appendChild(el("p", null, txt(it.what)));
+      if (it.contents && it.contents.length) {
+        var ul = el("ul", "pkg-list");
+        it.contents.forEach(function (x) { ul.appendChild(el("li", null, x)); });
+        c.appendChild(ul);
+      }
+      if (has(it.sha)) c.appendChild(el("p", "pkg-hash", "SHA-256 " + it.sha));
+      var acts = el("div", "pkg-actions");
+      var a = extLink(it.url, "跳转原始渠道下载", "btn btn-primary", it.url);
+      a.appendChild(el("span", "btn-arrow", "↗"));
+      acts.appendChild(a);
+      acts.appendChild(el("span", "src-chip", "已核验 · HTTP 200 · 字节数一致 · SHA-256 一致"));
+      c.appendChild(acts);
+      g.appendChild(c);
+    });
+    m.appendChild(g);
+
+    if (X.verify && X.verify.length) {
+      var sh = el("div", "sec-head");
+      sh.style.marginTop = "48px";
+      sh.appendChild(el("h3", "sec-title", "原始渠道核验结果"));
+      sh.appendChild(el("p", "sec-sub", txt(X.verifyNote)));
+      m.appendChild(sh);
+      var wrap = el("div", "table-wrap");
+      var t = el("table");
+      var thead = el("thead");
+      var tr = el("tr");
+      ["资料包", "原始文件名", "大小", "HTTP", "字节数核对", "SHA-256（与官方清单一致）"].forEach(function (h) {
+        tr.appendChild(el("th", null, h));
+      });
+      thead.appendChild(tr); t.appendChild(thead);
+      var tb = el("tbody");
+      X.verify.forEach(function (v) {
+        var r = el("tr");
+        r.appendChild(el("td", null, txt(v.title)));
+        r.appendChild(el("td", "mono small", txt(v.file)));
+        r.appendChild(el("td", null, txt(v.size)));
+        r.appendChild(el("td", null, txt(v.http)));
+        r.appendChild(el("td", null, txt(v.bytes)));
+        r.appendChild(el("td", "mono small", txt(v.sha)));
+        tb.appendChild(r);
+      });
+      t.appendChild(tb); wrap.appendChild(t); m.appendChild(wrap);
+      m.appendChild(el("p", "rail-hint", "核验时间是 2026-09-24；原始渠道的版本清单同时提供 manifest.json 与 SHA256SUMS.txt，下载后可以自己再比对一遍。"));
+    }
+
+    var U = X.upstream;
+    if (U && U.items && U.items.length) {
+      var uh = el("div", "sec-head");
+      uh.style.marginTop = "48px";
+      uh.appendChild(el("h3", "sec-title", txt(U.title)));
+      uh.appendChild(el("p", "sec-sub", txt(U.sub)));
+      m.appendChild(uh);
+      var ug = el("div", "grid grid-3");
+      U.items.forEach(function (it) {
+        var c = el("div", "card");
+        var h = el("h3", null, "");
+        h.appendChild(extLink(it.url, txt(it.name)));
+        c.appendChild(h);
+        c.appendChild(el("p", null, txt(it.what)));
+        var r = el("div", "pkg-actions");
+        r.appendChild(el("span", "src-chip", txt(it.note)));
+        c.appendChild(r);
+        ug.appendChild(c);
+      });
+      m.appendChild(ug);
+    }
+
+    if (X.gaps && X.gaps.length) {
+      var n = el("div", "notice");
+      n.style.marginTop = "24px";
+      n.appendChild(el("strong", null, "边界与缺口（包内原文 + 本次没做的部分）："));
+      var gl = el("ul", "list-plain");
+      X.gaps.forEach(function (x) { gl.appendChild(el("li", null, x)); });
+      n.appendChild(gl);
+      m.appendChild(n);
+    }
+  }
+
   /* -------------------------------------------------------- 官方规格速览 */
   function renderOfficialFacts() {
     var m = mount("mount-official-facts");
@@ -1935,6 +2166,7 @@ window.SITE_DATA = {
     renderDucklink();
     renderSoftware();
     renderDownloads();
+    renderPublicDownloads();
     renderOfficialFacts();
     renderAuthor();
     renderLicense();
